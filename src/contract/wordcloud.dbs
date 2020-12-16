@@ -1,0 +1,13 @@
+namespace incoming {
+    class Request {
+        @NotBlank
+        text: string
+    }
+}
+
+namespace outgoing {
+    class Response {
+      @NotBlank
+      image: string
+    }
+}
