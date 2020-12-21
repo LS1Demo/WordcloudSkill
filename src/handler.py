@@ -5,6 +5,7 @@ import numpy as np
 
 from PIL import Image
 
+from src.scraper.scraper import Scraper
 from src.wordcloud.word_cloud_creator import WordCloudCreator
 
 logging.basicConfig(level=logging.INFO)
@@ -17,7 +18,11 @@ def evaluate(payload: dict, context: dict) -> dict:
 
     log.info("Wordcloud started!")
 
-    text = base64.b64decode(payload["text"].encode('utf-8')).decode('utf-8')
+    if payload["text"]:
+        text = base64.b64decode(payload["text"].encode('utf-8')).decode('utf-8')
+    if payload["url"]:
+        text = Scraper.get_plain_text_from_url(payload["url"])
+
     if payload["mask"] == "":
         mask = None
     else:
