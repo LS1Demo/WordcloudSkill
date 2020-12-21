@@ -19,7 +19,7 @@ def evaluate(payload: dict, context: dict) -> dict:
 
     log.info("Wordcloud finished!")
 
-    return {"image": base64.b64encode(image.encode("utf-8")).decode('utf-8')}
+    return {"image": image}
 
 
 def on_started(context: dict):
