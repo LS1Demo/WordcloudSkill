@@ -9,5 +9,4 @@ class Scraper:
         soup = bs(urlopen(url))
         text = soup.get_text().strip()
         text = re.sub(r'(\n\s*)+\n+', '\n\n', text)
-        print(text)
         return text

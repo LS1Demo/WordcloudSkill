@@ -1,6 +1,5 @@
 namespace incoming {
     class Request {
-        @NotBlank
         text: string
         mask: string
         url: string
