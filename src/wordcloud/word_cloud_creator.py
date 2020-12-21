@@ -2,10 +2,11 @@ import base64
 from io import BytesIO
 import json
 
+from nltk.corpus import stopwords
 import numpy as np
 from textblob import TextBlob
 
-from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
 from src.wordcloud.grouped_color_func import GroupedColorFunc
@@ -31,6 +32,23 @@ class WordCloudCreator:
                               max_font_size=max_font_size,
                               width=width, height=height,
                               stopwords=STOPWORDS).generate(text)
+    def _read_config(config):
+        config_decoded = json.loads(config)
+        max_words = config_decoded["max_words"] if config_decoded["max_words"] else 5000
+        max_font_size = config_decoded["max_font_size"] if config_decoded["max_font_size"] else 72
+        width = config_decoded["width"] if config_decoded["width"] else 1000
+        height = config_decoded["height"] if config_decoded["height"] else 623
+        return int(max_words), int(max_font_size), int(width), int(height)
+
+    @staticmethod
+    def create_wordcloud(text: str, mask: np.ndarray = None, config: str = "") -> str:
+        max_words, max_font_size, width, height = WordCloudCreator._read_config(config)
+        merged_stopwords = stopwords.words('english') + stopwords.words('german')
+
+        wordcloud = WordCloud(background_color="white", max_words=max_words, mask=mask,
+                              max_font_size=max_font_size,
+                              width=width, height=height,
+                              stopwords=merged_stopwords).generate(text)
 
         color_to_words = WordCloudCreator.calculate_color_shades()
 
