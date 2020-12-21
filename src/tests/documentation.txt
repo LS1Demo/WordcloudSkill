@@ -1,0 +1,4581 @@
+GAIA
+Release Notes
+User Manual
+Documentation
+v3.1.0
+User Manual
+GAIA - Generic Artificial Intelligence Applications
+Version 3.1.0
+Table of Contents
+1. FREYA - UI
+1.1. Usage
+1.1.1. Overview
+1.1.2. User Management
+1.1.3. Identity
+1.1.4. Utterance
+1.1.5. Code
+1.1.6. Behaviour
+1.1.7. Behaviour Designer
+1.1.8. Insights
+1.1.9. Connex
+2. RAIN - Orchestration
+2.1. Markup
+2.1.1. Template evaluation
+2.1.2. Elements
+2.2. Skills
+2.2.1. Using the skill store
+2.2.2. Skill creation
+2.2.3. Running skills in AIOS
+2.2.4. Advanced techniques
+2.3. Identity Supervision
+2.3.1. Supervision Resolution
+3. ATREUS - Scripting
+3.1. Usage
+3.1.1. Variables
+3.1.2. Definitions
+3.1.3. Safe accessor & elvis operator
+3.1.4. Recover assignment
+3.1.5. Comments
+3.1.6. If - Else
+3.1.7. When
+3.1.8. Try / Catch
+3.1.9. Functions
+3.1.10. Shifts
+3.1.11. Do Block
+3.1.12. Unapply
+3.1.13. String
+3.1.14. Recursion Guard
+3.1.15. Using Atreus in a software project
+3.2. Built-in Functions
+3.2.1. Number
+3.2.2. Boolean
+3.2.3. List
+3.2.4. Map
+3.2.5. Bytes
+3.2.6. Object
+3.2.7. String
+3.2.8. Date
+3.2.9. Crypto
+3.3. Custom features
+3.3.1. Monads
+3.3.2. PDFScript
+3.3.3. ProtoScript
+3.3.4. Webflux
+3.3.5. Slf4j
+3.3.6. GaiaQuery
+3.3.7. BYOM Connector [DEPRECATED]
+3.3.8. Skills Connector
+3.4. Examples
+3.4.1. n!
+3.4.2. ringarea
+3.4.3. find the sum of all the multiples of 3 or 5 below 1000
+3.4.4. what is the largest prime factor of the number 123?
+3.4.5. is 41 a prime number?
+4. GAIA Query - Query Language
+4.1. Usage
+4.1.1. Basics
+4.1.2. Extension functions
+4.1.3. Subfield selections
+4.1.4. Aggregate functions
+4.1.5. GROUP BY clause
+4.1.6. HAVING clause
+4.1.7. WHERE clause
+4.1.8. Condition
+4.1.9. Joins
+4.1.10. ORDER BY clause
+1. FREYA - UI
+FREYA enables you configure every service in the GAIA ecosystem.
+
+1.1. Usage
+The following sections provide information about the usage of the platform.
+
+1.1.1. Overview
+platform
+Figure 1. Front page of Freya
+In the top left corner where it says "Bugs Bunny" you can switch between the different Identities you are developing.
+
+On the top right corner there is a drop down menu which allows for management of the following elements:
+
+Identities
+
+Users
+
+The navigation bar on the left contains all the items necessary to implement an Identity.
+
+1.1.2. User Management
+Provides creation, deletetion and update of users. Furthermore it is possible to manage the roles and permissions of a user.
+
+The following roles are available:
+
+Administrator: Can edit everything and has access to the user management.
+
+Entity-reader: Is able to read data from Utterances, Code and Behaviours.
+
+Entity-writer: Is allowed to create, edit and delete elements in Utterances, Code and Behaviour.
+
+Connex-reader: Is allowed to access Connex.
+
+1.1.3. Identity
+An Identity is an intelligent application that consists of Behaviours, Code and Utterances. It can make use of custom AI models to enhance its capabilities further.
+
+At the core of an identity are its behaviours (= processes) that can be modeled in the behaviour designer (see Section 1.1.7).
+
+Identities at runtime
+Firstly the behaviour 'welcome' will be executed or, if none is defined, a process can be started by any start event (see Section 1.1.7.2). In a process statements, prompts and fulfilments can be used as output (see Section 1.1.4.4, Section 1.1.4.3 and Section 1.1.4.5).
+
+In process steps that get user input, you can store this input using a key value store called context. The context can be read and modified inside code tasks and in the life cycle hooks of code tasks and prompt tasks in the behaviour designer (see Section 1.1.7.5.3 and Section 1.1.7.5.2). To read a value from context you can access it inside Atreus scripts with $someKey. For more information refer to the Atreus documentation.
+
+When a user triggers an intent during a running process, the process associated with the intent via an intent start event is executed (see Section 1.1.4.2 and Section 1.1.7.2). After the triggered process has finished, the conversation returns to the previous process. This enables the user to ask interposed questions (also known as intent cascading). If the triggered process is too large (> 5 statements / prompts / code tasks), the previous process will be terminated.
+
+Frontend of an identity
+To run created processes in a pleasing way, set up a website and import the library gaia-js-sdk-convey (short: Convey). The Convey will connect to your identity and then automatically render the statements / prompts / fulfilments it receives.
+
+For custom implementations you can subscribe to different channels of the connection to the backend to get the data you are interested in.
+
+Channels are used to limit the scope of the data that you receive. When you subscribe to the text channel, you only receive statements / prompts / fulfilments and sent user input.
+Existing channels are:
+
+text: All statements / fulfilments / prompts and the user replies are sent on this channel
+
+notification: Events that should not be displayed to the user, but should inform the UI of some event are sent on this channel
+
+context: Whenever the context is updated it is sent to this channel
+
+audio: Voiced statements / fulfilments / prompts and userâ€™s voice replies are sent to this channel
+
+log: Information about errors in the backend are sent to this channel (example: a process cannot be continued because there is no valid branch at a gateway)
+
+1.1.4. Utterance
+An utterance is a unit in a conversation with a user. It consists of:
+
+Intents: Assess the intent of written or spoken text
+
+Prompts: Used to ask the user for information
+
+Statements and fulfilments: Present information to the user
+
+For any utterance you can define
+
+Qualifier (required): Unique name
+
+Appendent: High level appendent
+
+Labels: A label represents a topic. You can assign 0 to n labels and use them in your search queries.
+
+The qualifier provides a unique name and the appendent should be a high level description of an utterance. Tags are useful for searching utterances that belong to the same topic.
+
+Search
+The search functionality can be used to filter utterances, behaviours and code entities by searching for labels, qualifiers, utterances and appendents. The query syntax underlies the Atreus programming language and currently following methods are allowed:
+
+qualifier("string")
+utterance("string")
+label("string")
+appendent("string")
+and()
+or()
+not()
+If no Atreus function is used, the utterances will be filtered by the qualifier.
+
+Examples
+
+test
+
+Find all utterances with the qualifier "test"
+
+label("test")
+
+Find all utterances with the label "test"
+
+qualifier("test")
+
+Find all utterances with the qualifier "test"
+
+utterance("test")
+
+Find all utterances with the utterance "test"
+
+appendent("test")
+
+Find all utterances with the appendent "test"
+
+not(label("test"))
+
+Find all utterances with not the label "test"
+
+or(qualifier("abc"), label("def"))
+
+Find all utterances with the qualifier "abc" or the label "def"
+
+and(qualifier("abc"), label("def"))
+
+Find all utterances with the qualifier "abc" and the label "def"
+
+Fuzzy search is being used meaning that if you have a prompt containing the following utterance what does the fox say? the query utterance("fox") would match.
+Intent
+An intent is a collection of sentences that describe a userâ€™s intent to start a process. You train an intent by adding a few sentences to it (by clicking the plus button). As a result the AI model will be able to recognize different variations of the given sentences. The chapter behaviour designer (see Section 1.1.7) describes how intents can be used to start a process.
+
+intent
+Prompt
+A prompt is used to interact with a user. It sends a message and awaits a response. The syntax is our own XML-based markup language that uses tags to add meta information to your text.
+
+Example
+
+You want to design a form that asks the user for his name and lets him reply.
+
+markup example
+Figure 2. Form with a question, a label field and a submit button.
+Telling the system what to display cannot be done without adding meta information (like: this should be a button, this should be a label field, â€¦â€‹). Therefore we use tags to annotate our text with the necessary information.
+
+The text tag tells the system to display simple text input, text tells it to display an input field and submit is the tag for a submit button.
+<form>
+    <label>What is your name?</label>
+    <text name="firstName"></text>
+    <submit>Send</submit>
+</form>
+The markup provides many different options to build input forms and represent information. Refer to the markup documentation for detailed explanation of the available tags.
+
+Statement
+A statement presents information to the user. It is written in markup and can use context variables to change its contents dynamically.
+
+Fulfilment
+A fulfilment presents information to the user like a statement, but is additionally the end of a process.
+
+Special Utterances
+These utterances have special functions and get triggered automatically. If they are in an identity that is not the Zero identity, they will be executed. If they donâ€™t exist in an identity, the utterances in the Zero identity are triggered.
+
+Behaviours
+The welcome behaviour is the initial process that is triggered when somebody connects to an identity.
+
+The Unknown Intent behaviour is triggered when no matching intent was found.
+
+Stemenets
+The error statement gets triggered when an error occurred.
+
+The discontinuable statement shows the user that the process canâ€™t be continued.
+
+1.1.5. Code
+In the Code section you can add your own code that can be executed by a process. Supported languages are:
+
+Atreus (recommended)
+
+Prolog
+
+Any code that is executed as part of a behaviour gets full read access to the context object. In Atreus code you can simply read from context using the $ like this: $variableName.
+
+Example of reading the variable participants from context
+Context
+{
+    selectedCourse: "Responsible sunbathing",
+    participants : ["George", "Gina", "Umberto"]
+}
+
+Atreus code
+$participants <!-- evaluates to ["George", "Gina", "Umberto"]-->
+For details refer to the Atreus documentation.
+
+For any code you can define
+
+Qualifier (required): Unique name
+
+Appendent: High level appendent
+
+Labels: A label represents a topic. You can assign 0 to n labels and use them in your search queries.
+
+The qualifier provides a unique name and the appendent should be a high level description of a code element. Tags are useful for searching code elements that belong to the same topic.
+
+1.1.6. Behaviour
+The Behaviour section contains all the processes of an identity. Per default the initial behaviour that is executed is called 'welcome'. It is used to trigger other processes. When editing a behaviour the behaviour designer is launched.
+
+For any behaviour you can define
+
+Qualifier (required): Unique name
+
+Appendent: High level appendent
+
+Labels: A label represents a topic. You can assign 0 to n labels and use them in your search queries.
+
+The qualifier provides a unique name and the appendent should be a high level description of a behaviour. Tags are useful for searching behaviours that belong to the same topic. The set tags will also be added as tags to the utterances and code elements used in this behaviour.
+
+Inactive Processes
+Sometimes it is useful to disable Behaviours for testing purposes.
+
+This can be achieved with the ON/OFF switch in the Behaviour designer. When a Behaviour is disabled the label "inactive" is shown in the Behaviour overview.
+
+1.1.7. Behaviour Designer
+The behaviour designer lets you design processes in Business Process Model and Notation (BPMN) fashion using the utterances and codes you have defined before.
+
+Sidebar
+The sidebar provides tools and all the building blocks for creating a process.
+
+process designer legend
+Figure 3. Building blocks of a process in the sidebar of the behaviour designer
+Tools
+Hand tool: Click and drag to move around in the process view
+
+Lasso tool: Click and drag to select multiple building blocks at once to either move or remove them
+
+Create/remove space tool: Click and drag between building blocks to shift them together or apart
+
+Connect tool: Click two building blocks to connect them with a directed edge
+
+Building blocks
+The sidebar offers all the basic building blocks that also come with more specific implementations (like Prompt Task for basic type Task).
+
+Table 1. Behaviour building blocks
+Name	Type	Look
+Start Event
+
+Start Event
+
+Start Event
+
+Timer Start Event
+
+Timer Start Event
+
+Start Event
+
+Intent Start Event
+
+Start Event
+
+Intent Start Event
+
+Notification Event
+
+Intermediate Event
+
+Notification Boundary Event
+
+End Event
+
+End Event
+
+End Event
+
+Fulfilment End Event
+
+End Event
+
+Fulfilment End Event
+
+Intent End Event
+
+End Event
+
+Intent End Event
+
+Call Activity Task
+
+Task
+
+Call Activity Task
+
+Code Task
+
+Task
+
+Code Task
+
+Prompt Task
+
+Task
+
+Prompt Task
+
+Statement Task
+
+Task
+
+Statement Task
+
+Exclusive Gateway
+
+Gateway
+
+Exclusive Gateway
+
+Add building blocks
+To add a basic building block, select it in the sidebar and place it in the process with a click.
+
+To add a more specific building block:
+
+add its basic version
+
+click on it
+
+select the option GAIA task type in the menu
+
+select the desired type
+
+process designer task config
+Figure 4. Example of adding a Prompt Task by first adding a Task and then selecting the GAIA Type Prompt.
+To add a Call Activity Task:
+
+add a basic Task
+
+click on it
+
+select the option Change type
+
+select the type Call Activity
+
+process designer call activity task config
+Configure building blocks
+The building blocks Basic Start Event and Basic End Event work out of the box, but all other building blocks need further configuration.
+
+Example: A Statement Task needs a reference to the statement that it should send to the user.
+
+To configure a building block, double click it and follow the instructions for the specific type of block.
+
+Start Event
+A start event is the entry point of a process. There are two types of start event:
+
+Basic Start Event: Entry point when the process is called from another process
+
+It is only possible to add one Basic Start Event
+
+Intent Start Event: Entry point when the user input triggers an intent
+
+It makes sense to add multiple Intent Start Events, if different intents should start different steps of the process.
+
+Timer Start Event: Entry point when the process is called by a scheduled event
+
+A process can have multiple Timer Start events
+
+Configure an Intent Start Event
+Double click the Intent Start Event and select the intent that should be used to trigger it.
+
+Configure a Timer Start Event
+Double click the Timer Start Event and input a valid cron expression.
+
+timer event configuration
+Figure 5. You can input a cron expression
+Cron expressions
+Please find below the fields of a valid cron expression:
+
+                                    0/5        *       *       *       *       ?
+seconds______________________________|         |       |       |       |       |
+minutes________________________________________|       |       |       |       |
+hours__________________________________________________|       |       |       |
+day of the month_______________________________________________|       |       |
+month__________________________________________________________________|       |
+day of the week________________________________________________________________|
+Allowed numeric values:
+seconds [0-59]
+
+minutes [0-59]
+
+hours [0-23]
+
+Day of month [1-31]
+
+Month [1-12]
+
+Day of the week [1-7]
+
+Allowed symbols
+* Any value
+
+/ Step values e.g 0/5
+
+- Range of values. e.g 5-8
+
+, Value list separator e.g 5,8,10
+
+? Used instead of '*' for leaving day-of-week blank
+
+The execution time on the cluster will be used for the scheduling. In other words, if the server runs on a different timezone, please do not forget to convert the times. e.g. ` 0 0 8 * * ? -â†’ This will be executed at 8:00 a.m. cluster time`
+If a Timer Start Event is changed with a new expression, the new expresion will be applied once the process is saved (No initial delay can be configured) and the old registered events will be cancelled. Deleting a process or modifying the type of the Start Event will cause the cancellation of all registered events.
+Intermediate / Boundary Event
+Represents an event in the process that needs to be handled. The difference when compared to a statement or a prompt is, that it is not displayed to the user as text. Instead it is a message to the conversational UI that is handled in the background. There is one type of Intermediate Event:
+
+Notification Event: Sends a notification to the client on a channel separate from the text (statement / prompt / fulfilment) channel so that the contents are not displayed in HTML. Using the Javascript library gaia-js-sdk-convey, the client can register an event handler to react to specific notifications.
+
+Configure a Notification Event
+Double click the Notification Event and click Add to add a new notification. Give it a name and click the pencil to edit its contents.
+
+End Event
+An end event is the final step of a process. If the process has been called by another process, the other process continues after the end event. There are three types of end events:
+
+Basic End Event: The process is done
+
+Fulfilment End Event: The process is done, a specified fulfilment is sent to the user
+
+Intent End Event: The process is done, if it has been called by another process, the other process continues. After all processes are done the specified intent is triggered. This results in another process being started.
+
+Any behaviour (excluding endless loops) should contain one or more of these end events. It makes sense to add multiple fulfilments, if a process can produce different fulfilments in different cases.
+Only one fulfilment can be executed in a single execution of a process. If you want the process to continue after a fulfilment, use a statement.
+Configure a Fulfilment End Event
+Double click the Fulfilment and select the Fulfilment that should be sent to the client.
+
+Configure an Intent End Event
+Double click the Intent End Event and select the Intent that should be triggered.
+
+Task
+A task is any step in the process that includes interaction with the user or execution of code. There are several task types:
+
+Statement Task
+Sends a specified statement to the client.
+
+Configure a Statement Task
+Double click the Statement Task and select the Statement that should be sent to the client.
+
+Prompt Task
+Sends a specified prompt to the user. The user can then reply using UI elements in the markup (buttons, forms with submit) or with a text reply.
+
+When the user replies to a prompt the input of the user is stored in the context variable $result. The $result is overwritten when the user provides the next input.
+
+If you need the user input later, store the $result to another variable in context in the onComplete lifecycle hook like this update("newVariable", $result).
+Configure a Prompt Task
+Double click the Prompt Task and select the Prompt that should be sent to the client in the Reference tab.
+
+process designer task config prompt ref
+Figure 6. When you double click the Prompt Task you can select which prompt you want to use
+The NER Strategy tab offers various NER strategies for user input. The user input is parsed and recognized named entities are written into context.
+
+process designer task config prompt ner
+Figure 7. You can select 0 to n NER types to recognize named entities in the users reply
+// Example:
+// User Input: Alan Turing's birthday was on 23.06.1912
+// NER Strategy: datetime & person
+
+result : {
+    datetime: "23.06.1912",
+    person: "Alan Turing"
+}
+The Prompt task supports lifecycle hooks for Atreus code execution. This means that Atreus code can be executed at specific points in time.
+
+process designer task config prompt onInit
+Figure 8. The lifecycle hooks are accessible in their own tab
+Existing lifecycle hooks are:
+
+onInitiate: Is executed as first hook. This is useful for setting variables in context to a default value.
+
+onContinue: Is executed after onInitiate and before the prompt is sent to the user. If the result evaluates to true, the task is skipped and onComplete is not executed.
+
+onComplete: Is executed after the user input has been stored into the result variable in context
+
+These hooks can be used to make calculations and store values into context.
+
+Atreus Hooks
+Figure 9. Flow chart describing the order in which the lifecycle hooks are executed.
+Examples:
+
+// onInitiate: Initialize the variable $acceptTos to false before the prompt is sent if it has not been defined. Set the variable $receiveNewsletter to true.
+
+update("acceptTos",$acceptTos?:false)
+update("receiveNewsletter",true)
+// onContinue: Skip the prompt if the user has already consented to the terms of service before and therefore $acceptTos is true.
+
+eq($acceptTos,true)
+// onComplete: Check if the value in $result equals "yes" and store the result into $subscribeToNewsletter.
+
+update("subscribeToNewsletter",eq($result,"yes"))
+The Suggestions tab offers the option to add suggested replies to a prompt. A suggestion can do two things:
+
+Change variables in the context and render the same element again. This is suitable for dynamically changing a prompt based on context variables. Changing the context is done via atreus script that is evaluated on suggestion click.
+
+Display a specific statement when the suggestion is clicked.
+
+A suggestion defined in the Prompt modal always has to go with a suggestion in the markup, otherwise it would not be displayed to the user. The name attribute of the suggestion in the markup needs to be the same as the name of the suggestion in the Prompt.
+process designer prompt suggestion
+Figure 10. Example of a suggestion that changes context and another suggestion that displays a statement
+To display these suggestions, the prompt needs to define them in the markup with the same name:
+
+<text if="{{isNull($os?)}}">Pick your OS to get the installation instructions</text>
+<text if="{{eq($os?, 'windows')}}">Double click the installer and click next a few times</text>
+
+<suggestion name="windowsSuggestion">Windows</suggestion>
+<suggestion name="linuxSuggestion">Linux</suggestion>
+Code Task
+Executes a specified code from the Code section. To return a value from the code section we can simply write it as the last statement of our code task. The value will then be stored in the $result field.
+
+Example:
+mapOf("someKey":"someValue")
+Inside the code task we have full read access to the variables in the context.
+
+// Example
+mapOf($someContextVar:"someValue")
+Configure a Code Task
+Double click the Code Task and select the Code that should be executed in the Reference tab.
+
+The code task supports the following life cycle hooks for Atreus code execution. They are accessible in their own tab:
+
+onComplete: Is executed after the result of the code task has been stored into the $result variable in context
+
+Call Activity Task
+Starts a specified process from its Basic Start Event and continues to the next element after the process has terminated with any end event (comparable to a function call).
+
+process designer call activity example
+Figure 11. Process that calls the process blockingSubprocess and continues with resultStatement after blockingSubprocess has finished.
+Configure a Call Activity Task
+Double click the Call Activity Task and select the Behaviour that should be executed in the Reference tab
+
+Exclusive Gateway
+The exclusive gateway is used for exclusive decision making based on context data or user input (that resides inside $result in the context).
+
+Configure an Exclusive Gateway
+Double click the outgoing edges of the gateway and give them a condition in Atreus syntax that evaluates to a boolean value. At the moment there is no possibility to specify a default branch.
+
+To merge the branches we do not use another gateway, but simply draw edges to the next common element.
+
+ExclusiveGateway
+Figure 12. Exclusive gateway that picks separate branches if the reply to the areYouVegetarian-prompt is either 'yes' or 'no'. There is no gateway to merge the branches - they are simply connected to the same element.
+If multiple branch conditions evaluate to true at runtime, only one of the branches is selected and continued.
+If none of the branch conditions evaluate to true at runtime the process will be stuck & you get the error "Der Prozess kann nicht fortgefÃ¼hrt werden.".
+Configure an Default Flow
+This condition will only be executed if none of the other conditions were true.
+
+To configure a default flow click on the arrow, select the wrench and click on Sequence Flow.
+
+gateway default flow
+
+1.1.8. Insights
+Contains tools for debugging an identity.
+
+Conversation
+The Conversation tab lets you interact with an identity and observe its inner state.
+
+conversation
+Interact with the identity and variables that have been written into context will appear in the top right view. If the identity sends notifications via intermediate event (see Section 1.1.7.3) they will appear in the bottom right view.
+
+1.1.9. Connex
+The Connex section enables you to look at utterances that were not understood by the identity or errors occurring within RAIN that were not propagated to the user.
+
+Connex
+First you pick a queue on the left hand side. This specifies the type of message you want to look at.
+
+Then every time you click Next you pop one element of the selected queue. In the menu on the right hand side of the message you can either discard the message or requeue it.
+
+connex2
+2. RAIN - Orchestration
+Each orchestra needs a conductor. RAIN, the association center coordinates all services and functions within GAIA and represents the artificial connex.
+
+2.1. Markup
+To provide statements, prompts and fulfilments with more metadata we have defined an XML markup that contains tags for input and presentation elements similar to HTML.
+
+The markup makes use of a templating engine, so evaluation of Atreus scripts and access to context variables is supported.
+
+At runtime the markup is evaluated by the templating engine, the resulting markup is then sent to the client. The client uses gaia-js-sdk-convey (short convey) to render suitable HTML for each markup component. Convey provides the option to replace any renderer of a markup component with your own version of that renderer.
+
+The full markup specification is available in the GAIA Markup XSD.
+
+2.1.1. Template evaluation
+Fields that support template evaluation (like the class-attribute) can consist of an Atreus expression. The Atreus expression needs to be inside double curly brackets to be evaluated.
+
+Example
+<label>{{substr("A long string",7)}}</label>
+
+Resulting markup after template evaluation
+<label>string</label>
+An Atreus expression can be surrounded by other text
+<label>Short {{substr("A long string",7)}}!</label>
+
+Resulting markup after template evaluation
+<label>Short string!</label>
+2.1.2. Elements
+Presentation
+
+block
+
+bold
+
+carousel
+
+form
+
+headline
+
+image
+
+italic
+
+item
+
+items
+
+link
+
+overlays
+
+overlay
+
+table
+
+label
+
+video
+
+Input
+
+button
+
+camera
+
+codeReader
+
+email
+
+map
+
+multipleChoice
+
+phone
+
+selection
+
+singleChoice
+
+slider
+
+slotmachine
+
+spinner
+
+suggestion
+
+textarea
+
+text
+
+trigger
+
+upload
+
+Table 2. Attributes for every element
+Name	Description	Required	Default value	Supports Atreus Templates
+class
+
+The class assigned to the element when it is rendered in HTML
+
+no
+
+-
+
+yes
+
+id
+
+The id assigned to the element when it is rendered in HTML
+
+no
+
+-
+
+yes
+
+Presentational elements
+Display information to the user.
+
+Block
+A block is a simple container used to wrap other elements.
+
+Table 3. Image Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+if
+
+Atreus expression that decides if the block should be displayed
+
+no
+
+true
+
+yes
+
+foreach
+
+Expression that duplicates the block for all entries in a list and makes the list entries accessible. For an example of foreach see Item.
+
+no
+
+-
+
+no
+
+You may use &quot; to send a double quote (") to the ATREUS expression (e.g. <block if="{{eq(&quot;2&quot;,'2')}}">â€¦â€‹</block>). In case you do not want that behaviour, you can escape it with \&quot;, this way the ATREUS expression will receive &quot;
+It is useful to wrap a whole statement or prompt inside a block and give it a class or an id. This way styling it in the frontend is easier.
+<block class="block-with-style some-second-class">
+    <label>Are you enjoying or not enjoying this doc?</label>
+    <button value="yes">Yes</button>
+    <button value="yes">Yes</button>
+</block>
+A block can be used to wrap input elements and the necessary submit button. All submittable input elements inside the block will then be written into context variables named according to the name-attribute in the markup.
+
+<form>
+    <block class="security-question">
+        <label>What is your first and last name?</label>
+        <text name="firstName"></text>
+        <text name="lastName"></text>
+        <submit>Submit</submit>
+    </block>
+</form>
+Resulting context
+{
+    "firstName": [
+        "John"
+    ],
+    "lastName": [
+        "Doe"
+    ]
+}
+Bold
+bold is a tag for displaying a bold text.
+
+<bold>Some bold text</bold>
+Carousel
+Displays multiple pieces of content next to each other and allows the user to change the focus dynamically.
+
+Each card in the carousel is defined by a block tag that is a direct child of the carousel tag.
+
+markup carousel
+Figure 13. Carousel containing three blocks where each block represents a card.
+<carousel class="example-carousel">
+    <block>
+        <headline>Some other item</headline>
+        <label>Very interesting details concerning the other item.</label>
+        <image src="static/tree.png"/>
+    </block>
+    <block>
+        <headline>Focused item</headline>
+        <label>Every carousel item consists of a block that can contain any other item.
+        For example label, images, buttons, ...
+        </label>
+        <image src="static/tree.png"/>
+    </block>
+    <block>
+        <headline>Next one</headline>
+        <label>The next item doesn't contain an image, but at least it has a button.
+        Some test text to fill a bit more space. Yes that should do.
+        </label>
+        <button value="ok">Okay</button>
+    </block>
+</carousel>
+Form
+Can contain several input fields and exactly one submit button.
+
+Supported fields are:
+
+block
+
+bold
+
+break
+
+button
+
+camera
+
+carousel
+
+codeReader
+
+email
+
+headline
+
+image
+
+italic
+
+items
+
+link
+
+map
+
+multipleChoice
+
+phone
+
+reel
+
+selection
+
+singleChoice
+
+slotmachine
+
+spinner
+
+submit
+
+table
+
+label
+
+text
+
+textarea
+
+trigger
+
+upload
+
+video
+
+<form name="someForm">
+    <block>
+        <headline>verification</headline>
+    </block>
+    <phone name="phoneNumberVariableInContext"></phone>
+    <submit>Send verification text</submit>
+</form>
+Headline
+Simple text that is stylable with the class lto-headline.
+
+<headline>Some title</headline>
+Image
+The image markup is rendered as an <img> in HTML. The attributes are passed on to the <img> tag in HTML.
+
+Table 4. Image Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+src
+
+URL referring to the source of the image.
+
+yes
+
+-
+
+yes
+
+width
+
+Valid css width string setting the image width
+
+no
+
+-
+
+no
+
+height
+
+Valid css height string setting the image width
+
+no
+
+-
+
+no
+
+alt
+
+Alternative text that is displayed if the image cannot be loaded
+
+no
+
+-
+
+no
+
+<image src="https://via.placeholder.com/150/0000FF/808080" width="200" alt="A very nice image"></image>
+Italic
+italic is a tag for displaying an italic text.
+
+<italic>Some italic text</italic>
+Item
+An item represents an item in the Items tag (unordered list).
+
+The item must always be a direct child of the Items type.
+An item can contain either plain text or an items element.
+
+Table 5. item Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+if
+
+Atreus expression that decides if the item should be displayed
+
+no
+
+true
+
+yes
+
+foreach
+
+Expression that duplicates the item for all entries in a list and makes the list entries accessible
+
+no
+
+-
+
+no
+
+Items
+To render an unordered or ordered list in HTML you can use the <items> tag to wrap a number of <item> tags.
+
+Table 6. Items Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+ordered
+
+Boolean if the list is ordered or unordered
+
+no
+
+-
+
+no
+
+<items>
+    <item>Item 1</item>
+    <item>Item 2</item>
+    <item>
+        Item 3
+        <items ordered="true">
+            <item>Sub 1</item>
+            <item>Sub 2</item>
+        </items>
+    </item>
+</items>
+<items>
+    <item foreach="$wine in $wines">$wine.name</item>
+</items>
+Link
+The link tag renders a hyperlink with the value attribute as reference. It also has an if-attribute that evaluates an Atreus expression - if the expression evaluates to false, the link is not displayed.
+
+Table 7. Link Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+value
+
+URL you want the link to refer to
+
+yes
+
+-
+
+yes
+
+if
+
+Atreus expression that decides if the link should be displayed
+
+no
+
+true
+
+yes
+
+<link value="https://example.com" if="{{eq($someContextVar,'2')}}">Example Link</link>
+Video
+The video tag renders a video.
+
+Table 8. Video Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+src
+
+URL to the video file
+
+yes
+
+-
+
+no
+
+<video src="https://example.com"/>
+Overlay
+overlays is the container element of several overlay elements.
+
+An overlay element need to have a trigger attribute, which need to be equal to the name of the associated trigger element.
+
+If the associated trigger is clicked, the overlay will be shown.
+
+The overlay component can contain a block or a form element.
+
+When the wrapped form element contains submit and the submit-button is pressed, the information will be stored on the associated trigger. The data will be published to GAIA when the trigger is submitted.
+
+Table 9. Overlay Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+trigger
+
+is equal to the name of the associated trigger element
+
+yes
+
+-
+
+no
+
+<overlays>
+    <overlay trigger="trigger_1">
+        <block>
+            <headline>Some text here.</headline>
+        </block>
+    </overlay>
+    <overlay trigger="trigger_2">
+        <form>
+            <text name="text"/>
+            <submit>Select</submit>
+        </form>
+    </overlay>
+</overlays>
+Table
+The table type renders a HTML table and can contain multiple row tags.
+
+Each row tag can contain multiple col tags.
+
+The col tags contain the content of the table.
+
+<table>
+    <row>
+        <col><headline>Cell 1</headline></col>
+        <col><headline>Cell 2</headline></col>
+    </row>
+    <row>
+        <col>Cell 3</col>
+        <col>Cell 4</col>
+    </row>
+</table>
+Label
+Simple label that is stylable with the class lto-label.
+
+<label>Some text</label>
+Useful as a wrapper for text where plain text is not allowed like inside block containers.
+
+<block>
+<label>Some text</label>
+</block>
+Input elements
+Give the user the possibility to give input to the system.
+
+Every input element except the Button, Selection and Suggestion needs to be wrapped in a form or block with a submit element.
+Table 10. Input Element Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+The name for the variable that stores the input value into context
+
+no
+
+-
+
+no
+
+If the name attribute is not specified, the value is stored into $result.
+Button
+Offers the user a predefined reply to a prompt.
+
+Table 11. Button Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+value
+
+The reply that is stored into the context.
+
+yes
+
+-
+
+yes
+
+text
+
+The text displayed on the button (can also be done through inner text).
+
+no
+
+-
+
+yes
+
+name
+
+Name of the variable in context where the buttonâ€™s value should be stored
+
+no
+
+"result"
+
+no
+
+Example
+<button value="ok">Send me the daily newsletter</button>
+
+Resulting context
+{
+    "result": "ok"
+}
+<button name="myButton" value="ok">Send me the daily newsletter</button>
+
+Resulting context
+{
+    "myButton": "ok"
+}
+<button name="myButton" value="ok">
+    <block>
+        <label>Send me the</label>
+        <label>daily newsletter</label>
+    </block>
+</button>
+
+Resulting context
+{
+    "myButton": "ok"
+}
+Camera
+The camera tag switches on the browser camera and lets the user take photos via button click until a photo is suitable and is submitted via submit button.
+
+|maxCompressSize |Used for image compression on client side with given value represents the maximum file size after compression. |no |1 |no
+
+|required |Boolean value that decides if a not-empty-validation should be done before a camera can be submitted. |no |false |no
+
+Example
+<form>
+    <block>
+        <camera></camera>
+        <submit>Submit</submit>
+    </block>
+</form>
+The taken image is stored into the context as base64 encoded string.
+
+Choice
+A single selectable item inside a Multiple Choice or Single Choice container. A choice can consist of one single inner text or a combination of the following input fields:
+
+label
+
+italic
+
+bold
+
+image
+
+break
+
+block
+
+Table 12. Choice Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name for the boolean value (checked / unchecked) inside the container variable (single choice / multiple choice) in context
+
+yes
+
+-
+
+yes
+
+selected
+
+Sets the boolean value of the choice
+
+no
+
+false
+
+yes
+
+foreach
+
+Expression that duplicates the choice element for all entries in a list and makes the list entries accessible. For an example of foreach see Item.
+
+no
+
+-
+
+no
+
+Example
+<choice>first choice</choice>
+Example
+<choice>
+    <label>first choice</label>
+    <image src="http://wwww.image.firstchoice.com"/>
+</choice>
+CodeReader
+Lets you scan QR or bar codes and store the resulting data into context.
+
+Table 13. CodeReader Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name for the scanned value in context
+
+yes
+
+-
+
+yes
+
+format
+
+The type of code you want to read. Available are {"qr","bar"}.
+
+yes
+
+-
+
+no
+
+Example
+<form>
+    <block>
+        <codeReader name="wineCodeReader" format="qr" />
+        <submit>Submit</submit>
+    </block>
+</form>
+
+Resulting context
+{
+  "wineCodeReader":["http://www.somewhineshop.com/"]
+}
+Map
+The map markup displays a Google map, Here map or an OpenStreetMap and lets the user pick several markers.
+
+Table 14. Map Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name for the scanned value in context
+
+yes
+
+-
+
+yes
+
+src
+
+URL to the file containing the markers
+
+no
+
+-
+
+yes
+
+centerLng
+
+The Longitude parameter which will be centered
+
+no
+
+-
+
+yes
+
+centerLat
+
+The Latitude parameter which will be centered
+
+no
+
+-
+
+yes
+
+centerBrowserLocation
+
+Centers the location of the client
+
+no
+
+false
+
+no
+
+mapType
+
+Can be either 'osm', 'here' or 'google'
+
+yes
+
+osm
+
+no
+
+required
+
+At least one Marker needs to be selected
+
+yes
+
+false
+
+no
+
+markerIcon
+
+Replaces the default icon of a marker
+
+no
+
+-
+
+no
+
+maxSelections
+
+Set the maximal marker selections
+
+no
+
+1
+
+no
+
+selectedMarkerIcon
+
+Replaces the default icon of a selected marker
+
+no
+
+-
+
+no
+
+zoom
+
+Set the map zoom factor
+
+no
+
+8
+
+no
+
+The following features only work if the 'mapType' is set to 'here'.
+
+Table 15. Attributes for Here Maps
+Name	Description	Required	Default value	Supports Atreus Templates
+routePoints
+
+Semicolon separated list of tuples of latitude and longitude which will be displayed as a route on the map
+
+no
+
+-
+
+yes
+
+routeStartIcon
+
+Replaces the default icon of the route start point
+
+no
+
+-
+
+no
+
+routeEndIcon
+
+Replaces the default icon of the route end point
+
+no
+
+-
+
+no
+
+Example
+<block>
+    <map name="map" src="./url/to/file" markerIcon="./url/to/file" mapType="here" centerBrowserLocation="true" maxSelections="2" zoom="10" routePoints="47.1,45.2;47.2,45.3"/>
+</block>
+
+Resulting context
+{
+    "map": [
+        {
+            "markers": [
+                {"position": {"lat": 0, "lng": 0}, "meta": {"desc": "abc"}},
+                {"position": {"lat": 0, "lng": 1}, "meta": {"desc": "def"}}
+            ]
+        }
+    ]
+}
+Email
+The email tag is a text input field with the email validation type.
+
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the variable in context where the email address is stored
+
+yes
+
+-
+
+placeholder
+
+Placeholder text that is displayed inside the field while it is empty. Only makes sense if the value attribute isnâ€™t set.
+
+no
+
+-
+
+no
+
+value
+
+Sets the fieldâ€™s initial value.
+
+no
+
+""
+
+yes
+
+required
+
+Boolean value that decides if a not-empty-validation should be done before the field can be submitted.
+
+no
+
+false
+
+no
+
+Example
+<form>
+    <email name="registrationEmail" placeholder="{{substr('Enter any email', 6)}}" required="true"></email>
+    <submit>Register</submit>
+</form>
+
+
+Resulting context
+{
+    "registrationEmail": [
+        "asdf@asdf.com"
+    ]
+}
+Multiple Choice
+The multipleChoice tag is the container for 1 to n Choice elements. 0 to all Choice elements can be selected by the user.
+
+Table 16. Multiple Choice Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the variable in context where choice values are stored
+
+yes
+
+-
+
+no
+
+sieve
+
+Boolean value that decides if only selected choices should be written into context
+
+no
+
+true
+
+no
+
+Example
+<form>
+    <block>
+    <multipleChoice name="ingredientChoice">
+        <choice name="ham">Ham</choice>
+        <choice name="cheese" selected="true">Cheese</choice>
+        <choice name="cheese" selected="true">None</choice>
+    </multipleChoice>
+    <submit>Order</submit>
+    </block>
+</form>
+
+Resulting context
+{
+    "ingredientChoice": [
+        {
+            "name": "cheese",
+            "value": true
+        },
+        {
+            "name": "none",
+            "value": true
+        }
+    ]
+}
+Phone
+The phone tag is a text input field with the HTML input type 'tel'.
+
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the variable in context where the phone number is stored
+
+yes
+
+-
+
+placeholder
+
+Placeholder text that is displayed inside the field while it is empty. Only makes sense if the value attribute isnâ€™t set.
+
+no
+
+-
+
+no
+
+value
+
+Sets the fieldâ€™s initial value.
+
+no
+
+""
+
+yes
+
+required
+
+Boolean value that decides if a not-empty-validation should be done before the field can be submitted.
+
+no
+
+false
+
+no
+
+Example
+<form>
+    <phone name="yourNumber" value="0043" required="true"></email>
+    <submit>Send cat facts</submit>
+</form>
+
+
+Resulting context
+{
+    "yourNumber": [
+        "0043 1234 6789"
+    ]
+}
+Reel
+A reel contains 1 to n reelValues. At all times only one reelValue is selected.
+
+The reel must always be a direct child of the Slotmachine type.
+Table 17. Reel Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the variable that stores the selected reelValue in context.
+
+yes
+
+-
+
+no
+
+Example
+For examples refer to Slotmachine.
+
+reelValue
+A reelValue consists of a type and a value. If it is selected and submitted, the value is displayed and stored into context according to its type.
+
+The reelValue must always be a direct child of the Reel type.
+Table 18. reelValue Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+value
+
+The value displayed and stored into context, a string for valueType char or digit and an image url string for img.
+
+yes
+
+-
+
+no
+
+valueType
+
+Specifies which type of value is displayed and stored into context if selected and submitted. Available are: {"char","digit","img"} to display either numbers, strings or images.
+
+no
+
+"char"
+
+no
+
+Example
+For examples refer to Slotmachine.
+
+Selection
+This tag can present the user with 1 to n boolean choices (click left part of block or click right part of selectionItem).
+
+A selection contains multiple selectionItem tags, each representing a boolean choice. Within each selectionItem there should be two selectable tags, which can contain tags like images or labels. The user can then make a choice between left and right element. The name parameter is required for selectionItem and selectable tags.
+
+Example
+<selection name="foodSelection">
+    <selectionItem name="hamOrCheese">
+        <selectable name="ham">
+            <image src="ham.jpg" width="100" height="100"></image><label>Ham</label>
+        </selectable>
+        <selectable name="cheese">
+            <image src="cheese.jpg" width="100" height="100"></image><label>Cheese</label>
+        </selectable>
+    </selectionItem>
+    <selectionItem name="wineOrBeer">
+        <selectable name="wine">
+            <image src="wine.jpg" width="100" height="100"></image><label>Wine</label>
+        </selectable>
+        <selectable name="beer">
+            <image src="beer.jpg" width="100" height="100"></image><label>Beer</label>
+        </selectable>
+    </selectionItem>
+</selection>
+
+Resulting context
+{
+    "foodSelection": [
+        {
+            "hamOrCheese": "left"
+        },
+        {
+            "wineOrBeer": "right"
+        }
+    ]
+}
+markup selection
+Figure 14. Selection with one choice between left or right.
+Single Choice
+The singleChoice tag is the container for 1 to n Choice elements. Exactly 1 Choice must be selected by the user.
+
+Table 19. Single Choice Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the variable in context where choice values are stored
+
+yes
+
+-
+
+no
+
+sieve
+
+Boolean value that decides if only selected choices should be written into context
+
+no
+
+true
+
+no
+
+required
+
+Boolean value that decides if a not-empty-validation should be done before a singleChoice can be submitted.
+
+no
+
+false
+
+no
+
+Example
+<form>
+    <block>
+    <singleChoice name="dayChoice">
+        <choice name="mo">Monday</choice>
+        <choice name="tu">Tuesday</choice>
+        <choice name="we">Wednesday</choice>
+        <choice name="th">Thursday</choice>
+        <choice name="fr">Friday</choice>
+    </singleChoice>
+    <submit>Book</submit>
+    </block>
+</form>
+
+Resulting context
+{
+    "dayChoice": [
+        {
+            "name": "fr",
+            "value": true
+        }
+    ]
+}
+markup singleChoice
+Figure 15. A single choice selection with 5 different choices.
+Slider
+A slider lets the user select a value from a range of values. It can either be a decimal value range with a specified start, end and step size or a range of specified string values.
+
+Table 20. Slider Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the variable in context where the value should be stored on submit.
+
+yes
+
+-
+
+yes
+
+max
+
+Inclusively sets the maximum value the slider is allowed to reach. Only works for decimal ranges!
+
+no
+
+10
+
+no
+
+horizontal
+
+Boolean value that decides if the slider's orientation should be horizontal (or vertical if it is false)
+
+no
+
+true
+
+no
+
+min
+
+Inclusively sets the minimum value the slider is allowed to reach. Only works for decimal ranges!
+
+no
+
+0
+
+no
+
+step
+
+If the slider cannot move a whole step, it will not move at all. Only works for decimal ranges!
+
+no
+
+0.1
+
+no
+
+value
+
+Sets the initial value of the slider for decimal ranges. If the given value is out of range, it will default to the closest possible value. For string ranges this attribute sets the initial position of the slider to the element at index value in the values array.
+
+no
+
+1
+
+no
+
+values
+
+Sets the string range of the slider. Expects a comma separated list of values in the range. Example: "morning,noon,afternoon,night".
+
+no
+
+-
+
+yes
+
+Example: a slider with a given string value range with the default value being the values array at index 2
+<form>
+    <block>
+        <label>How are you doing?</label>
+        <slider name="moodSlider" values="bad,average,good,very good" value="2"></slider>
+        <submit>Submit</submit>
+    </block>
+</form>
+
+Resulting context
+{
+    "moodSlider": [
+        "good"
+    ]
+}
+markup slider1
+Figure 16. Example of a slider with string range
+Example of a slider with a decimal value range bounded by min and max attribute with a default value
+<form>
+    <block>
+        <label>How well are you doing on a scale from 1 to 7.5?</label>
+        <slider name="moodSlider" min="1" max="7.8" step="0.5" value="5"></slider>
+        <submit>Submit</submit>
+    </block>
+</form>
+
+Resulting context
+{
+    "moodSlider": [
+        7.5
+    ]
+}
+markup slider2
+Figure 17. Example: a slider with decimal range
+Slotmachine
+A UI element that displays 1 to n Reels like a slot machine in a casino. Each Reel provides 1 to n reelValues of which only one can be selected.
+
+Example
+<form>
+    <block>
+        <label>Select your birth date</label>
+        <slotmachine>
+            <reel name="centuries">
+                <reelValue valueType="char" value="nineteenhundred"></reelValue>
+                <reelValue valueType="char" value="2k"></reelValue>
+            </reel>
+            <reel name="decades">
+                <reelValue valueType="digit" value="0"></reelValue>
+                <reelValue valueType="digit" value="1"></reelValue>
+                <reelValue valueType="digit" value="2"></reelValue>
+                <reelValue valueType="digit" value="3"></reelValue>
+                <reelValue valueType="digit" value="4"></reelValue>
+                <reelValue valueType="digit" value="5"></reelValue>
+                <reelValue valueType="digit" value="6"></reelValue>
+                <reelValue valueType="digit" value="7"></reelValue>
+                <reelValue valueType="img" value="https://example.com/image.png"></reelValue>
+                <reelValue valueType="digit" value="9"></reelValue>
+            </reel>
+            <reel name="years">
+                <reelValue valueType="digit" value="0"></reelValue>
+                <reelValue valueType="digit" value="1"></reelValue>
+                <reelValue valueType="digit" value="2"></reelValue>
+                <reelValue valueType="digit" value="3"></reelValue>
+                <reelValue valueType="digit" value="4"></reelValue>
+                <reelValue valueType="digit" value="5"></reelValue>
+                <reelValue valueType="digit" value="6"></reelValue>
+                <reelValue valueType="digit" value="7"></reelValue>
+                <reelValue valueType="img" value="https://example.com/image.png"></reelValue>
+                <reelValue valueType="digit" value="9"></reelValue>
+            </reel>
+        </slotmachine>
+        <submit>Submit</submit>
+    </block>
+</form>
+
+Resulting context
+{
+    "centuries": [
+        "nineteenhundred"
+    ],
+    "decades": [
+        "https://example.com/image.png"
+    ],
+    "years": [
+        3
+    ]
+}
+markup slotmachine
+Figure 18. A slotmachine using the value types char, digit and img
+Spinner
+The spinner is a UI element for number input, that is either controlled by two buttons (for up an down) or by directly writing a value into it.
+
+Table 21. Spinner Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the variable in context where the value should be stored on submit.
+
+yes
+
+-
+
+no
+
+max
+
+Inclusively sets the maximum value the spinner is allowed to reach.
+
+no
+
+10
+
+no
+
+min
+
+Inclusively sets the minimum value the spinner is allowed to reach.
+
+no
+
+0
+
+no
+
+step
+
+Sets the stepsize of the spinner. If the spinner's value cannot be changed by a whole step, it will not change at all.
+
+no
+
+1
+
+no
+
+value
+
+Sets the initial value of the spinner if it is inside the given range. Otherwise it will default to the closest value inside the range.
+
+no
+
+1
+
+no
+
+Example
+<form>
+    <block>
+        <label>How many kebaps would you like to order?</label>
+        <spinner name="kebapSpinner" min="3" max="9999" step="1" value="5"></spinner>
+        <submit>Order now!</submit>
+    </block>
+</form>
+
+Resulting context
+{
+    "kebapSpinner": [
+        5
+    ]
+}
+markup spinner
+Suggestion
+A suggestion is used to provide suggested replies to a prompt. When it is clicked it can do two things:
+
+Change variables in the context and render the same element again. This is suitable for dynamically changing a prompt based on context variables. Changing the context is done via Atreus script that is evaluated on suggestion click.
+
+Display a specific statement when the suggestion is clicked and then go back to the prompt.
+
+The suggestion markup element only displays a suggestion. To add the functionality you need to edit the prompt in behaviour designer and add a suggestion with the same qualifier as the suggestion markupâ€™s name attribute.
+Table 22. Suggestion Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the suggestion. This should be the same string as the name of the suggestion you add to a prompt in the behaviour designer.
+
+yes
+
+-
+
+no
+
+Example
+<label if="{{isNull($os?)}}">Pick your OS to get the installation instructions</label>
+<label if="{{eq($os?, 'windows')}}">Double click the installer and click next a few times</label>
+
+<suggestion name="windowsSuggestion">Windows</suggestion>
+<suggestion name="linuxSuggestion">Linux</suggestion>
+Text
+The text is a regular text input field.
+
+Table 23. Text Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the variable in context where the value should be stored on submit.
+
+yes
+
+-
+
+no
+
+regex
+
+A regex that is validated before the Block or Form with this text can be submitted.
+
+no
+
+-
+
+no
+
+placeholder
+
+Placeholder text that is displayed inside the text while it is empty. Only makes sense if the value attribute isnâ€™t set.
+
+no
+
+-
+
+yes
+
+value
+
+Sets the initial value of the text.
+
+no
+
+-
+
+yes
+
+required
+
+Boolean value that decides if a not-empty-validation should be done before a text can be submitted.
+
+no
+
+false
+
+no
+
+Example
+<form>
+    <block>
+        <label>Enter a number and a lower case character!</label>
+        <text name="usefulInput" placeholder="e. g. 1a" regex="[0-9][a-z]"></text>
+        <submit>Submit</submit>
+    </block>
+</form>
+
+Resulting context
+{
+    "usefulInput": [
+        "2b"
+    ]
+}
+markup textInput
+Figure 19. Example image of a text with placeholder text and a regex for validation
+Textarea
+The textarea is a regular textarea.
+
+Table 24. Textarea Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the variable in context where the value should be stored on submit.
+
+yes
+
+-
+
+no
+
+rows
+
+Rows of textarea
+
+no
+
+10
+
+no
+
+cols
+
+Columns of textarea
+
+no
+
+40
+
+no
+
+placeholder
+
+Placeholder text that is displayed inside the textarea while it is empty. Only makes sense if the value attribute isnâ€™t set.
+
+no
+
+-
+
+yes
+
+value
+
+Sets the initial value of the textarea.
+
+no
+
+-
+
+yes
+
+required
+
+Boolean value that decides if a not-empty-validation should be done before a textarea can be submitted.
+
+no
+
+true
+
+no
+
+Example
+<form>
+    <label>Enter a text!</label>
+    <textarea name="usefulInput" rows="10" cols="30" placeholder="Fill in some text ..."></textarea>
+    <submit>Submit</submit>
+</form>
+
+Resulting context
+{
+    "usefulInput": [
+        "some text"
+    ]
+}
+markup textarea
+Figure 20. Example image of a textarea with placeholder, rows and cols.
+Trigger
+If the trigger is clicked, the associated overlay will be shown.
+
+Table 25. Trigger Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the variable in context where the value should be stored on submit and it need to be equal to the trigger attribute of the associated overlay.
+
+yes
+
+-
+
+no
+
+Example
+<form>
+    <label>Enter your name!</label>
+    <trigger name="trigger_1">Trigger 1st overlay</trigger>
+    <trigger name="trigger_2">Trigger 2st overlay</trigger>
+    <submit>Submit</submit>
+</form>
+
+<overlays>
+    <overlay trigger="trigger_1">
+        <form>
+            <text name="last_name"/>
+            <submit>Submit</submit>
+        </form>
+    </overlay>
+    <overlay trigger="trigger_2">
+        <form>
+            <text name="first_name"/>
+            <submit>Submit</submit>
+        </form>
+    </overlay>
+</overlays>
+
+Resulting context
+{
+    "trigger_1": [
+        {"last_name": ["Mas"]}
+    ]
+    "trigger_2": [
+        {"first_name": ["Sam"]}
+    ]
+}
+markup trigger
+Figure 21. Example image of a trigger.
+Upload
+The upload tag renders a file upload element into which users can drag and drop a file they want to upload. On submit the file is base64 encoded and stored into context with some additional information.
+
+Table 26. Upload Attributes
+Name	Description	Required	Default value	Supports Atreus Templates
+name
+
+Name of the variable in context where the file details should be stored on submit.
+
+yes
+
+-
+
+no
+
+maxSize
+
+The maximum allowed file size in megabytes
+
+no
+
+2
+
+no
+
+accept
+
+A comma separated list of allowed file endings.
+
+no
+
+-
+
+no
+
+maxCompressSize
+
+Used for image compression on client side with given value represents the maximum file size after compression.
+
+no
+
+1
+
+no
+
+required
+
+Boolean value that decides if a not-empty-validation should be done before a upload can be submitted.
+
+no
+
+false
+
+no
+
+Example
+<form>
+    <block>
+        <label>Upload your secret files in your preferred format.</label>
+        <upload name="secretFileUpload" maxSize="5" accept="pdf,txt,docx,html,tex"></upload>
+        <submit>Upload</submit>
+    </block>
+</form>
+
+Resulting context
+{
+    "secretFileUpload": [
+        {
+            "data": "ZGVhciBkaWFyeSwgdG9kYXkgSSB3YXMgYSBnb29kIGJveSA7LSk",
+            "fileExtension": "txt",
+            "fileName": "diary.txt",
+            "mimeType": "text/plain"
+        }
+    ]
+}
+markup upload
+Figure 22. Example of an upload element where an allowed file was dragged in via drag & drop.
+2.2. Skills
+Skills are small isolated services running in the AIOS with the goal of providing some form of business value by using the latest AI technologies, providing interfaces to external services or any other task imaginable. Analog to an application in an ordinary operating system.
+
+Skills can be obtained using the skill store system or by creating a skill yourself and plug it into the AIOS using an ordinary Git repository containing the code.
+
+2.2.1. Using the skill store
+Coming soon
+
+2.2.2. Skill creation
+The following section describes the process of creating skills.
+
+Supported languages and runtimes
+If a programming language is supported by the skill system is determined by the availability of a corresponding runtime. Currently, the following runtimes are available:
+
+Language	Version	Runtime	OS
+Python
+
+3.6.12
+
+007098893018.dkr.ecr.eu-central-1.amazonaws.com/skill-runtime-python-3.6:1.0.0
+
+Debian
+
+Python
+
+3.7.9
+
+007098893018.dkr.ecr.eu-central-1.amazonaws.com/skill-runtime-python-3.7:1.0.0
+
+Debian
+
+Skill project structure and required files
+A skill implementation must follow a well-defined project structure that is based upon the conventions and best practices of the given programming language. The simplest skill imaginable only requires two files. A skill.yml file and a source file inhabiting the handler function.
+
+Python
+The following listing illustrates the project structure of a python skill:
+
+Entries marked with [!] are required and cannot be omitted!
+â”œâ”€â”€ skill.yml [!]
+â”œâ”€â”€ README.md
+â”œâ”€â”€ requirements-dev.txt
+â”œâ”€â”€ requirements.txt
+â”œâ”€â”€ init.sh
+â”œâ”€â”€ src [!]
+|   â”œâ”€â”€ contract
+|   |   â””â”€â”€ demo.dbs
+â”‚   â”œâ”€â”€ handler.py
+â”‚   â”œâ”€â”€ __init__.py
+â”‚   â””â”€â”€ tokenizer.py
+â””â”€â”€ test
+    â”œâ”€â”€ __init__.py
+    â””â”€â”€ test_tokenizer.py
+The directory src can be considered as the root level python package. All code, tests aside, must reside within this directory and one might NOT change the name.
+
+Custom contracts must reside in src/contract for Python skills
+The definition of a skill - 'skill.yml'
+What differs an ordinary project from a skill is the existence of the skill.yml file. This file contains settings and configuration options set by the skill developer and without it a skill wouldnÂ´t be complete..
+
+The skill.yml file can not be omitted - under no circumstances.
+skill.yml
+# skill identifier
+owner: "leftshiftone"
+name: "echo"
+
+# version control
+scm: "https://leftshiftone@bitbucket.org/leftshiftone/skill-properties-demo.git"
+
+# skill license
+license:
+  name: "Apache 2.0"
+  url: "https://apache.org/licenses/LICENSE-2.0.html"
+visibility: "public"
+
+# additional properties
+labels: []
+authors: ["devs@leftshift.one"]
+
+# the runtime image
+image: "007098893018.dkr.ecr.eu-central-1.amazonaws.com/skill-runtime-python-3.7:1.0.0"
+
+resources:
+  cpu:
+    min: 100
+  memory:
+    min: 128
+
+properties:
+  - name: "ENABLE_COOL_FEATURE"
+    desc: "Should the cool feature be enabled or not?"
+    default: "YES"
+    pattern: "(YES|NO)"
+  - name: "ANOTHER_PROPERTY"
+    desc: "Just a placeholder"
+    default: "TEST"
+contract: ["leftshiftone/tokenizer", "./somecustomcontract"]
+composable: true
+network_access: false # no internet access necessary
+
+permissions: []
+
+# the main class to execute
+handler:
+  file: "handler"
+  function: "evaluate"
+The runtime image to be used - should match the Section 2.2.2.1 table
+The minimum resources required to run the skill - Memory Unit: Megabytes, CPU Unit: milliCPU
+Properties (environment variables) that can be passed to the skill - see: Section 2.2.4.1
+The contracts to be implemented - see: Section 2.2.2.5
+Location of the handler source file and the evaluation function - see: Section 2.2.2.4
+The evaluation function
+The handler function (often called evaluation function) can be considered the interface function of the skill. It is the function that actually implements the contract.
+
+Request - Response
+For a request/response skill each valid incoming message will trigger this function and whatever this function returns will be send back. Regardless of the programming language used to implement the skill the evaluation function always has an arity of 2 and always returns a map (or similar datastructure): Map â†’ Map â†’ Map.
+
+The incoming message adhering to a contract
+
+The evaluation context
+
+The evaluation function must always return a map adhering to the implemented contract.
+
+Python
+The evaluation function for a request/response Python skill looks like this:
+
+handler.py
+def evaluate(payload: dict, context: dict) -> dict:
+    return {}
+Initialization hooks
+Sometimes you might have some code that must be executed before a skill is actually running. For example one might download a machine learning model required for the skill to operate.
+
+For this purpose you can implement a special hook function: on_started/1 that receives the evaluation context as parameter.
+
+Language	Definition
+Python
+
+on_started(context: dict)
+
+This function, if present, will be called before anything else. For further inspiration how this function may be utilized see [Using the Data API to download Models].
+
+For now on code examples showing an evaluation function will be using python by default
+The contract
+Aside from the decision what programming language to use a skill developer should decide on what contract the skill implements. Contracts are the most essential part of any skill. A well-defined and good contract will make the skill easy to use and understand whereas complex contracts might lead to frustration and complex implementations.
+
+Contracts are defined using the Dynabuffers IDL - Please consult the Dynabuffers documentation for more details.
+Skill contracts define what the skill understands (incoming) and what a skill has to tell (outgoing). So before writing any skill code the clever skill developer invests a good amount of thinking-time into the skill contract.
+
+You should ask yourself a couple of questions:
+
+What goal(s) do I want to achieve?
+
+If multiple goals must be achieved are the goals tightly coupled? (do I need one or more contracts?)
+
+What information to I require to fulfil that goal? (incoming)
+
+How can I represent the result? (outgoing)
+
+A skill may implement more than one contract. But be advised implementing multiple contracts within a single skill should be the exceptional case.
+
+Let see an example for a skill implementing a tokenizer. A tokenizer contract may look like this:
+
+tokenizer.dbs
+namespace incoming {
+    class Request {
+        text: string
+    }
+}
+
+namespace outgoing {
+    class Response {
+      tokens: [string]
+    }
+}
+This should give you an idea how contracts are implemented and what they represent.
+
+As the example already indicates there are some conventions you must follow when designing skill contracts. To represent the incoming and outgoing part of the contract Dynabuffers namespaces are used. Everything in the incoming namespace is considered the "What the skill understands" part whereas the outgoing namespace is equivalent to "What does the skill produce" part.
+
+However we can be 100 percent sure that incoming messages that trigger the evaluation function will always adhere to the incoming part of the contract.
+
+We already provide a set of default contracts that can be implemented.
+A skill developer currently has two options: Either implementing default contracts provided by leftshift one or use custom contracts.
+
+You can mix custom and default contracts!
+Implementing a default contract
+In order to implement a default contract the contract to be implemented must be defined within the skill.yml file in the format leftshiftone/CONTRACT where all available contracts can be found here. So to implement the tokenizer default contract the skill.yml file must be adapted as following:
+
+skill.yml
+#...
+contract: ["leftshiftone/tokenizer"]
+#...
+This means: This skill implements the default leftshiftone/tokenizer (Definition) contract. It is possible to implement more than one contract (default and/or custom).
+
+Implementing a custom contract
+Of course we can not anticipate every business problem so custom contracts may be defined by the skill developer. Custom contracts are defined by creating one (or more) .dbs files written in the Dynabuffers IDL.
+
+Default contracts must be placed at a well-defined location within the skills project structure.
+A contract for a rather trivial addition only calculator could look like this:
+
+calculator.dbs
+namespace incoming {
+    class CalculatorRequest {
+        x: int
+        y: int
+    }
+}
+
+namespace outgoing {
+    class CalculatorResponse {
+      result: int
+    }
+}
+Using incoming and outgoing namespaces is a convention that must be followed when creating custom contracts!
+Single contract in action
+A rather naive implementation of the calculator.dbs contract using Python could look like this:
+
+handler.py
+def evaluate(payload, context):
+    x = payload["x"]
+    y = payload["y"]
+
+    return {'result': x+y}
+Using a single contract is rather simple and should always be the first approach for solving a given problem.
+
+Implementing multiple contracts
+A contract must have a clear and definite boundary. This might either be achieved using different contract files or using namespaces. Within the skill.yml file you may specify more than one custom contract file:
+
+skill.yml
+#...
+contract: ["./first", "./second"]
+#...
+whereas the contract files have the following contents:
+
+first.dbs
+namespace incoming {
+    class Request {
+        identityId: string
+    }
+}
+
+namespace outgoing {
+    class Response {
+      qualifiers: [string]
+    }
+}
+second.dbs
+namespace incoming {
+    class Request {
+        a: int
+        b: int
+    }
+}
+
+namespace outgoing {
+    class Response {
+      result: int
+    }
+}
+Using this method the contracts will be implicitly merged and wrapped with namespaces representing their file names. For the example files the implicitly merged contract does look like this:
+
+# namespace representing the file src/contract/first
+
+namespace `first` {
+    namespace incoming {
+        class Request {
+            identityId: string
+        }
+    }
+
+    namespace outgoing {
+        class Response {
+          qualifiers: [string]
+        }
+    }
+}
+
+# namespace representing the file src/contract/second
+
+namespace `second` {
+    namespace incoming {
+        class Request {
+            a: int
+            b: int
+        }
+    }
+    namespace outgoing {
+        class Response {
+          result: int
+        }
+    }
+}
+Please be aware of the grave accent (`) - every implicitly wrapped namespace will contain grave accents!
+The implicit merging aspect must be taken into consideration when sending requests or implementing the evaluation function.
+
+The second approach of defining multiple contracts is using a single contract file but specifying the boundaries using namespaces yourself:
+
+skill.yml
+#...
+contract: ["./multicontract"]
+#...
+multicontract.dbs
+namespace first {
+    namespace incoming {
+        class Request {
+            identityId: string
+        }
+    }
+
+    namespace outgoing {
+        class Response {
+          qualifiers: [string]
+        }
+    }
+}
+
+namespace second {
+    namespace incoming {
+        class Request {
+            a: int
+            b: int
+        }
+    }
+    namespace outgoing {
+        class Response {
+          result: int
+        }
+    }
+}
+Using this approach grave accents are only necessary when using special characters.
+As seen before: if only a single contract is implemented, the root level namespace can be omitted
+Multiple contracts in action
+When implementing multiple contracts the skill can be considered as the reacting side. The client sending the initial request as the acting side.
+
+A client may send a request (using Atreus) like this:
+
+skills()
+   .connect("some-skill-1")
+   .evaluate("second", mapOf("a": 1, "b": 2)
+It is clear that this message is a valid message that fulfils the second contract. The client side must specify the namespace (or contract) to be used.
+
+Since the message is valid the skill may now evaluate the message and react accordingly. How exactly this reaction looks like is decided by the skill developer. Yet the developer must have access to the information which namespace (or contract) an incoming message (payload) implements.
+
+The evaluate method receives two parameters:
+
+payload - the actual incoming message
+
+context - The evaluation context
+
+The evaluation context contains the information to which contract (or namespace) the current evaluated message belongs:
+
+handler.py
+def evaluate(payload, context):
+    namespace = context['namespace']
+    if namespace == "second.incoming":
+         ...
+    elif namespace == "first.incoming":
+        ...
+    ...
+Using that information the skill developer can react accordingly and send a matching response. Constructing the response and attaching the contract (or namespace) information is within the skill developers responsibility. Now the skill acts as the acting part and must specify which contract the response message implements.
+
+To do this the response map/dictionary must be constructed accordingly using the following format: {@the_namespace_name: {â€¦â€‹ actual message â€¦â€‹}}
+
+INFO: This might change in future releases
+
+For our concrete example a response to a message from the namespace second might look like this:
+
+response = {'@second' : {result: 5}}
+The complete evaluation function now may look like this:
+
+handler.py
+def evaluate(payload, context):
+    namespace = context['namespace']
+    if namespace == "second.incoming":
+         return {'@second': {'result' : 5}}
+    else:
+        pass
+Specifying third-party dependencies
+Skills just like any other modern application might require the use of third party libraries (dependencies). How third party libraries are declared differs from the programming language being used to implement the skill.
+
+The gaia-sdk is already implicitly included and read for use!
+Python
+For a python skill dependencies must be provided using a requirements.txt at the root level of the project structure. The usage of the requirements.txt file is identical to the well-known requirements.txt file used by pip.
+
+The official documentation for requirements file can be found here
+If the skill requires tensorflow the requirements.txt might look like this:
+
+tensorflow==2.3.0
+scipy
+more-itertools
+OS level hook - 'init.sh'
+This mechanism is already deprecated and considered UNSAFE!
+Sometimes declaring a dependency in the language related file is not enough. This might be the case when dependencies are used that require dynamically linked libraries (*.so etc.). In this case a special file init.sh can be used to execute OS-level command such as: apt-get install vim.
+
+2.2.3. Running skills in AIOS
+Only a running skill is a useful skill - in this section weâ€™ll take a look into how to bring your skill into production.
+
+To get you started weâ€™ve provided a sample skill for you here!
+Creating a skill
+Before a custom skill can be used in AIOS its code and resources must be checked into a git repository than can be reached by AIOS over the network.
+
+If you are not already familiar with git please take a glimpse at this.
+Supported Git Backends
+Currently, the following git backend are supported by AIOS:
+
+Name	Method	Auth	URL
+Bitbucket
+
+HTTPS
+
+Basic Auth (AppPassword)
+
+bitbucket.org
+
+Once your skill is in git you are good to go and import it into AIOS. Skills can be imported using either the user interface (freya) or the gaia-sdk.
+
+Using freya skills can be added by navigating to the 'Skills' section and clicking the 'Import Skill' button.
+
+import skill
+Make sure the project you want to import does follow the guidelines and all required files are present and checked into the git repository.
+Just click 'Import' and thats it! If all required files are there your project is imported as a skill. As easy as it gets!
+
+Creating provisions
+Importing your skill your skill is of course not enough to go into production. You need to create provisions of your skill. Those are the actual running instances of a skill. Provisions may be based on the same skill but use different configurations versions et cetera. This means that a skill might change its behaviour based on its configuration. This is why youâ€™ll only communicate with the actual skill provisions.
+
+Release management - first things first
+Before you can create a skill provision you must provide a fixed and immutable (more or less) version of that skill. This task is achieved using git tags.
+
+Choose good tag names such as v1.0.0
+It is not possible to create a provision without specifying a concrete version (tag). As a consequence is not possible to just provision 'the latest commit' since this would lead to unpredictable and inexplicable skill behaviour.
+
+Once youâ€™ve chosen a good tagging point in your commit history you may proceed with actually deploying the skill provision for that version:
+
+skill provision 1
+skill provision 2
+Of course skill provisions can be created using the gaia-sdk
+After clicking 'Ok' AIOS is starting your skill provision and after a short while your provision should be up and running!
+
+Monitoring the skills
+Coming soon
+
+Communication with the skill
+Running skill provisions alone do not provide a whole lot of value. We need to communicate with the skills and integrate them into existing workflows. You can communicate with skills directly using the gaia-sdk or use them into your existing behaviours using code tasks.
+
+The following example shows the piece of Atreus code required to communicate with a skill provision:
+
+skills()
+   .connect("echo-1")
+   .evaluate(mapOf("text": "hello world!")
+You must use the name of the skill provision and not the skill itself!
+This code task then can be used in a behaviour:
+
+skill in behaviour
+2.2.4. Advanced techniques
+The following section describes more advanced techniques regarding skills and their configuration parameters.
+
+Using properties to your advantage
+What, and how many properties are defined is at the skill developers discretion. Properties must be defined in the skill.yml definition file.
+
+Letâ€™s say we want to create a skill that takes an input string and transforms it either to uppercase, lowercase or capitalize the string. Of course one could implement three skills to fulfil each task, but a better way would be creating one skill that can be configured handling each of the three tasks and start it in three different configurations. Sounds better, right?
+
+The contract for our "string manipulator" skill is rather trivial (which is always a good thing!):
+
+stringmanipulator.dbs
+namespace incoming {
+    class Request {
+        text: string
+    }
+}
+
+namespace outgoing {
+    class Response {
+      manipulated: string
+    }
+}
+skill.yaml
+#...
+contract: ["./stringmanipulator.dbs"]
+properties:
+  - name: "MANIPULATION_METHOD"
+    desc: "Configures how the skill manipulates requests"
+    default: "UPPER"
+    pattern: "(UPPER|LOWER|CAPITALIZE)"
+#...
+If the property is omitted it will default to UPPER as defined. Using pattern allows the skill developer to restrict the property values to the defined regex pattern. In this case the value can only be UPPER, LOWER or CAPITALIZE.
+
+Each defined property can be accessed using the system environment:
+
+handler.py
+import os
+
+def evaluate(payload, context):
+    manipulation_method = os.environ.get('MANIPULATION_METHOD')
+    if manipulation_method == 'UPPER':
+        return {'manipulated': payload['text'].upper()}
+    elif manipulation_method == 'LOWER':
+        ...
+    ...
+Using this approach skills can be very flexible and configurable.
+
+Using the gaia-sdk within skills
+A skills implicitly receives the URL to the host system as the environment variable GAIA_URL and can be accessed as follows:
+
+handler.py
+import os
+
+url = os.environ["GAIA_URL"]
+Using this url a skill developer is able to use the gaia-sdk to connect directly to gaia. Currently it is necessary to provide the API key and secret as property since it this information cannot be passed implicitly.
+
+skill.yaml
+#...
+contract: ["./stringmanipulator.dbs"]
+properties:
+  - name: "GAIA_API_KEY"
+    desc: "api key"
+    default: ""
+  - name: "GAIA_API_SECRET"
+    desc: "api secret"
+    default: ""
+#...
+Using these two properties and passing them to the provision a connection to AIOS using the sdk can be established:
+
+handler.py
+import os
+from gaia_sdk.api.GaiaCredentials import HMACCredentials
+from gaia_sdk.gaia import Gaia
+
+api_key = os.environ["GAIA_API_KEY"]
+api_secret = os.environ["GAIA_API_SECRET"]
+url = os.environ["GAIA_URL"]
+
+gaia_sdk = Gaia.connect(url, HMACCredentials(api_key, api_secret))
+
+def evaluate(payload, context):
+    gaia_sdk.retrieve_intents(...)
+    ...
+Using this techniques you can access data provided by AIOS.
+
+Using the Data API to download models
+When creating AI or machine learning skills using and obtaining models in whatever form can be considered to be the rule rather than the exception. This is where the AIOS Data API in combination with the gaia-sdk shines. You can upload your data, models and whatever you require using the Data API and then access this data using the gaia-sdk in a skill.
+
+In this example weâ€™ll use a hook function to download a machine learning model that the implemented skill requires to operate.
+
+handler.py
+user_id = "123"
+tenant_id = "321"
+global keras
+
+def evaluate(payload, context):
+   return {'response': keras.do_ai(payload["text"])}
+
+def on_started(context: dict):
+    with open("/tmp/model.h5", "wb") as f:
+        data = gaia_sdk.data("gaia://{}@{}/models/model.h5".format(user_id, tenant_id)) \
+            .as_bytes() \
+            .pipe(ops.first()).run()
+        f.write(data)
+        log.info("Downloaded model to '/tmp/model.h5'")
+        keras = SomeKerasModule("/tmp/model.h5")
+Of course, youâ€™re not restricted to download files only using the sdk.
+
+2.3. Identity Supervision
+Identity instances can build relations to other identities using the AIOS graph. The supervision relation is used to send the request to the supervisor in case of unware events. Identities can have multiple supervisor identities.
+
+2.3.1. Supervision Resolution
+The supervision relations are shown in the Acyclic Directed Graph of AIOS. The supervision hierarchy must not have any loops, but can be made as deep as desired. The zero identity is implicitly added as the last identity in the supervision hierarchy.
+
+identity hierarchy
+Every edge between two nodes has a relationtype and a weight. An Identity forwards the call to the supervisor in case of an Unknown Event. If an Identity has several supervisors, the escalation calls are triggered in the order of the weight. If several relations have the same weight, the user is given the possibility to decide which supervisor should be called. The disambiguation process is only started, if
+
+Several supervisor relations have the same weigh
+At least two of the supervisors have a suitable answer.
+Disambiguation Process
+The disambiguation process is a "system" behaviour, such as "welcome", "Unknown Intent". In case of an ambiguous recognition, AIOS will search for a Behaviour named "Disambiguation Process". This Behaviour can be customized by the customer.
+
+It is highly recomended to define this process in the ZERO Identity, so that in case of occuring an Ambiguous Event, all identities will be able to find a "Disambiguation Process"
+Technical Description
+When AIOS finds multiple matches for an event with the same weight, the disambiguation process is triggered and a map with the classified intents (name: intentsMap) is provided to it:
+
+{
+
+  "intentsMap": {
+        "XXXXXX" : {
+                      "identityName": "IdentityName1",
+                      "identityId": "6366c2d5-d7b2-4cc2-82ea-5de7e04fed4a",
+                      "reference": "XXXXXX",
+                      "text": "inputText"
+                   },
+        "YYYYYY" : {
+                      "identityName": "IdentityName2",
+                      "identityId": "3d7e4d26-cd3c-44ee-9083-43b0afa5498b",
+                      "reference": "YYYYYYY",
+                      "text": "inputText"
+                   }
+  }
+}
+1.- Where XXXXXX is the id of the intent found in the identity: (id:"6366c2d5-d7b2-4cc2-82ea-5de7e04fed4a", qualifier: "IdentityName1")
+
+2.- Where YYYYYY is the id of the intent found in the identity: (id:"3d7e4d26-cd3c-44ee-9083-43b0afa5498b", qualifier: "IdentityName2")
+Configuration
+e.g. Standard "Disambiguation Process ":
+Please find below an image of a standard disambiguation Process
+
+disambiguation process
+A Node Start event
+A standard NodeStartEvent
+A Prompt to display the identities with responses and to require a decision.
+Add a ON-INITIATE expression to flatten all ids of the intents found.
+
+update("intentIds", keys($intentsMap))
+Configure the GER Utterance to display all identities which found a match
+# Utterance
+<block>
+    <label>Multiple matches were found in different identities with equal weight. Please select one to continue</label>
+    <block foreach="$intentId in $intentIds">
+        <button value="{{ $intentId }}">{{ $intentsMap.get($intentId).identityName }}</button>
+    </block>
+</block>
+A Intent End event
+The end event must be of type "Intent", however no futher configuration is required
+3. ATREUS - Scripting
+ATREUS is a customizable functional scripting language primarily designed for embedded use cases where fault tolerance as well as deterministic runtime behaviour have to be ensured.
+
+3.1. Usage
+The following sections provide information about the usage of the language.
+
+3.1.1. Variables
+Atreus is capable of defining custom variables by binding it to an Atreus instance. The variable can be accessed by the $ symbol e.g.
+
+$text
+3.1.2. Definitions
+While variables represents values which are bound from the execution context of an atreus script, a definition can be used to store intermediate results by assigning them names. The operator = is used to assign an expression to a definition. Definitions have to be placed in a do block. Definitions are immutable.
+
+do {
+   let x = 2
+   let y = 2
+   add(x, y)
+}
+A definition is evaluated lazily. The computation graph of a definition is executed when the value gets accessed.
+
+do {
+   let x = 2
+   x // definition is executed
+}
+Also functions as well as variables or complex constructs can be assigned to a definition.
+
+do {
+   let x = add(1, 2)
+   let y = sub(3, 4)
+   add(x, y)
+}
+do {
+   let z = $abc
+   z
+}
+
+do {
+   let a = when("abc") {
+      is "abc" -> true
+      default -> false
+   }
+   a
+}
+Definitions are only visible at a local scope.
+
+function pythagoras(a, b) {
+   do {
+      let x = mul(a, a)
+      let y = mul(b, b)
+      add(x, y)
+   }
+}
+function sumOfSquares(a, b) {
+   do {
+      let x = mul(a, a)
+      let y = mul(b, b)
+      add(x, y)
+   }
+}
+3.1.3. Safe accessor & elvis operator
+If you access variables that have not been defined yet, you will run into an AtreusException.
+
+// Assume $var has not been defined:
+$var // Raises AtreusException
+The safe accessor gives us a null value if the variable has not been defined yet.
+
+// Assume $var is undefined:
+$var? // Returns null
+The elvis operator lets us return a default value for undefined/null variables.
+
+// Assume var is undefined:
+$var ?: "default" // Returns "default"
+$var.key ?: "default" // Returns "default"
+
+// Assume var is null:
+$var ?: "default" // Returns "default"
+$var.key ?: "default" // Returns "default"
+
+// Assume var is mapOf("key" to "value")
+$var.key ?: "default" // Returns "value"
+3.1.4. Recover assignment
+If a function runs into any AtreusException, a recover assignment can be used to catch the exception and to return a value instead.
+
+div(1, 0) !: 2 // Catches AtreusException due to division by 0 and returns 2
+div(1,1)  !: 2 // Returns 1
+3.1.5. Comments
+Atreus also supports comments. Comments have two leading slashes.
+
+// comment line
+3.1.6. If - Else
+Flow control can be done with the if-elseIf-else construct. It supports 0 to n elseIf-blocks and 0 to 1 else blocks.
+
+if (<boolean condition>) {
+   // do something
+} elseIf (<boolean condition>) {
+   // do something
+} else {
+   // do something
+}
+If statements can also be written as a one liner
+
+if(eq($result,"a"), { true })
+if(eq($result,"b"), { false })
+3.1.7. When
+When matches its argument against all branches sequentially until some branch condition is satisfied. The switch construct supports is, in and default as branch condition keywords.
+
+is branches evaluate the given source as a boolean expression.
+
+in branches evaluate the given source whether a given list or range contains the element
+
+the default branch will be evaluated if none other branch was evaluated successfully
+
+A is branch statement can be a string, number or boolean as well as a function which returns a predicate or a boolean. The keyword is can be removed if the branch statement is a function.
+
+when("red") {
+   is "red"  -> 0
+   is "blue" -> 1
+   default -> 2
+}
+when(3) {
+   in 0..3 -> 0
+   in 4..7 -> 1
+   in [8, 9] -> 2
+   default -> 3
+}
+when("text") {
+   is regex("[a-z]+") -> 0 // regex is a function which returns a predicate
+}
+when(n) {
+   is isDivisor(2) -> 0 // isDivisor expects two arguments, the first argument is auto curried.
+}
+when(n) {
+   isDivisor(2) -> 0 // the keyword "is" can be removed if the statement is a function
+}
+3.1.8. Try / Catch
+The Try / Catch statement marks a block of statements to try, and specifies a response, should an exception be thrown. The try statement consists of a try block, which contains one or more statements. {} must always be used, even for single statements. At least one catch clause, or a finally clause, must be present.
+
+try {
+   div(1, 0)
+}
+catch {
+   is "NoSuchElementException" -> // do something
+   is "ArithmeticException" -> // do something
+   default -> // do something
+}
+3.1.9. Functions
+Functions can be registered by calling the addFunction method of an Atreus binding instance.
+
+binding.addFunction("add", list::add)
+Atreus treats functions as first-class citizens. This means the language supports passing functions as arguments to other functions, returning them as the values from other functions, and assigning them to definitions.
+
+function doSomething(e) -> {
+   add(e)
+}
+$list.forEach(doSomething)
+$list.forEach(add)
+At the moment Atreus supports up to 5 function arguments.
+
+function functionWith0Args() -> {}
+functionWith0Args()
+
+function functionWith1Args(a) -> {}
+functionWith1Args("a")
+
+function functionWith2Args(a, b) -> {}
+functionWith2Args("a", "b")
+
+function functionWith3Args(a, b, c) -> {}
+functionWith1Args("a", "b", "c")
+
+function functionWith4Args(a, b, c, d) -> {}
+functionWith4Args("a", "b", "c", "d")
+
+function functionWith5Args(a, b, c, d, e) -> {}
+functionWith5Args("a", "b", "c", "d", "e")
+Function arguments can by typed. An AtreusException is thrown at runtime if a function is invoked with an other value type. At the moment the following types are supported:
+
+name	description
+string
+
+all objects of type CharSequence
+
+number
+
+all objects of type Number
+
+boolean
+
+all objects of type Boolean
+
+collection
+
+all objects of type Collection
+
+map
+
+all objects of type Map
+
+function doWithString(e:string) -> add(e)
+function doWithNumber(e:number) -> add(e)
+Functions can also define a default value, if the function is called without the expected argument.
+
+function doWithString(e:string = "abc") -> add(e)
+function doWithNumber(e:number = 12345) -> add(e)
+Atreus also supports currying of a function. Currying is the process of breaking down a function into a series of functions that each take fewer arguments than the original function.
+
+function printSum(n1, n2) -> {
+   println(sum(n1, n2))
+}
+list($var).forEach(printSum.curry(1))
+Functions can also be defined as a lambda function.
+
+list($var).forEach((e) -> {
+   put(e)
+})
+3.1.10. Shifts
+Shift operators can be used to chain multiple functions into a function chain. There are two types of shifts: SuccessShift and FailureShift
+
+A SuccessShift is used to chain two functions A & B, where function A finishes successfully. The return value of function A is curried into the function call of function B.
+
+add(1, 2) => add(3)
+add(1, 2) => add(3) => add(4) => add(5)
+A FailureShift is used to chain two functions A & B, where function A finishes with an failure. The return value of function B will be returned in place of the return value of function A.
+
+div(1, 0) !> div(1, 2)
+div(1, $a) !> div(1, $b) !> div(1, $c)
+
+div(1, 0) !> when { default -> 10 }
+3.1.11. Do Block
+A do block is a construct which chains each instruction by applying a success shift implicitly.
+
+The following both atreus scripts behave the same:
+
+do {                        |   add(1, 2) =>
+   add(1, 2)                |   when {
+   when {                   |      is isOdd() -> 1
+      is isOdd() -> 1       |      is isEven() -> 2
+      is isEven() -> 2      |   } =>
+   }                        |   add(9, 16)
+   add(9, 16)               |
+}                           |
+The data flow of both atreus scripts look the same:
+
+1.) add(1, 2)        returns 3
+2.) 3 is odd,        return 1
+3.) add(9, 16, 1)    returns 26
+4.) return 26 as the result
+3.1.12. Unapply
+The unapply operator is used to extract the construction values of a compound object e.g. a list or a tuple.
+
+(entry, index) <- $list
+(_1st, _2nd) <- $tuple
+3.1.13. String
+String interpolation
+Variables can be inserted in a string via concat function or the usage of two curly braces around the variable.
+
+E.g. "Nice to meet you {{$firstname}}"
+
+Use of double quotes in a String
+Atreus also supports single and double quotes to initialize a String. If you need to declare a String containing double quotes, just use single quotes to declare the string and place the double quotes wherever are needed. (Double quotes must not be escaped)
+
+E.g. warn('This is a message with "double quotes"')
+
+3.1.14. Recursion Guard
+The recursion guard is an Atreus mechanism which prevents endless loops by recursions. If Atreus detects the same two function calls within the stack of recursive function calls an Atreus exception will be thrown.
+
+function doSomething() -> {
+   doSomething()
+}
+doSomething()
+3.1.15. Using Atreus in a software project
+This section shows what you need to do if you want to execute and enhance Atreus code in your own Java project.
+
+Gradle
+compile "one.leftshift.atreus:atreus-engine"
+
+Execution of a script
+String script = "eq(1,2)";
+AtreusInstance instance = Atreus.parse(script);
+instance.evaluate(binding)
+Function templates
+An AtreusBinding instance can also register an Atreus script as a template function. Template functions can be used to reuse or composite already defined functions.
+
+def template = '(var, exp) -> { if($exp, {update($var, inc(get($var)))}) }'
+binding.addFunction("incWhen", template)
+
+def instance = Atreus.parse('incWhen("var", true)')
+Template Engine
+Atreus can be used as a template engine. Scripts within the text are embedded within double curly brackets.
+
+final String template = 'text: {{round($value1)}} text {{ceil($value2)}} text'
+Atreus.evaluateTemplate(template, [value1:1.2, value2: 1.7]) == "text: 1.20 text 2 text"
+3.2. Built-in Functions
+Atreus defines numerous built-in functions which can be used out of the box.
+
+3.2.1. Number
+add: (n1:number, n2:number) adds one number to an other number
+
+add(4, 3) // --> 7
+add(4, -3) // --> -1
+sub: (n1:number, n2:number) subtracts one number from an other number
+
+sub(4, 3) // --> 1
+sub(4, -3) // --> 7
+mul: (n1:number, n2:number) multiplies one number from an other number
+
+mul(4, 3) // --> 12
+div: (n1:number, n2:number) divides one number from an other number. Throws an AtreusException when dividing through zero.
+
+div(4, 2) // --> 2
+div(4, 0) // throws an AtreusException
+mod: (n1:number, n2:number) returns the rest of an divide.
+
+mod(7, 2) // --> 1
+round: (n:number, scale:number) returns given number1 rounded to the closest integer using the given scale (number2)
+
+round(7.1234, 2) // --> 7.12
+abs: (n:number) returns the absolute value of a given number
+
+round(-2) // --> 2
+random: (min:number, max:number) returns a random integer value between the specified min (inclusive) and max (exclusive)
+
+random(2, 4) // --> 3
+ceil: (n:number) returns a given number rounded up to the next integer
+
+ceil(2.4) // --> 3
+ceil(-2.4) // --> -2
+floor: (n:number) returns a given number rounded down to the next integer
+
+floor(2.4) // --> 2
+floor(-2.4) // --> -3
+inc: (n:number) returns given integer number by incremented by one
+
+inc(2) // --> 3
+dec: (n:number) returns given integer number by decremented by one
+
+dec(3) // --> 2
+lt: (n1:number, n2:number) returns true if the first number is lower than the second
+
+lt(2, 3) // --> true
+le: (n1:number, n2:number) returns true if the first number is lower or equals the second
+
+le(2, 2) // --> true
+gt: (n1:number, n2:number) returns true if the first number is greater than the second
+
+gt(2, 3) // --> false
+ge: (n1:number, n2:number) returns true if the first number is greater or equals the second
+
+ge(2, 2) // --> true
+eq: (n1:number, n2:number) returns true if the first number equals the second
+
+eq(2, 2) // --> true
+neq: (n1:number, n2:number) returns true if the first number not equals the second
+
+neq(2, 2) // --> false
+between: (n:number, min:number, max:number) returns true if the first argument is between the second (inclusive) and third argument (inclusive)
+
+between(2, 1, 3) // --> true
+between(2, 2, 2) // --> true
+number: (n:number) returns the given string to a number
+
+number("0") // --> 0
+sqrt: (n:number) returns the square root of the given number.
+
+sqrt(25) // --> 5
+cbrt: (n:number) returns the cubic root of the given number.
+
+cbrt(125) // --> 5
+nthRoot: (n1:number, n2:number) returns the nth root of the given number.
+
+nthRoot(625, 4) // --> 5
+pi: () returns pi
+
+pi() // --> 3.14...
+e: () returns e
+
+e() // --> 2.71...
+sin: (n:number) returns the sine of the given value
+
+sin(2) // --> 0.909...
+cos: (n:number) returns the cosine of the given value
+
+cos(2) // --> -0.416...
+tan: (n:number) returns the tangent of the given value
+
+tan(2) // --> -2.18...
+asin: (n:number) returns the arc sine of the given value
+
+asin(0.9) // --> 1.119...
+acos: (n:number) returns the arc cosine of the given value
+
+acos(0.9) // --> 0.451...
+atan: (n:number) returns the arc tangent of the given value
+
+atan(0.9) // --> 0.732...
+sinh: (n:number) returns the hyperbolic sine of the given value
+
+sinh(2) // --> 3.626...
+cosh: (n:number) returns the hyperbolic cosine of the given value
+
+cosh(2) // --> 3.762...
+tanh: (n:number) returns the hyperbolic tangent of the given value
+
+tanh(2) // --> 0.964...
+log: (n:number) returns the natural logarithm of the given value
+
+log(2) // --> 0.693...
+log10: (n:number) returns the base 10 logarithm of the given value
+
+log10(2) // --> 0.301...
+isEven: (n:number) returns true if the given number is even
+
+isEven(2) // --> true
+isOdd: (n:number) returns true if the given number is odd
+
+isEven(2) // --> false
+isDivisor: (n1:number, n2:number) returns true if the second given number is a divisor of the first given number
+
+isDivisor(8, 4) // --> true
+isDivisor(8, 3) // --> false
+isNumeric: (obj) returns true if the given object is either a number or a string which can be parsed to a number
+
+isNumeric(8) // --> true
+isNumeric(8.5) // --> true
+isNumeric("8.5") // --> true
+isNumeric("test") // --> false
+isNumeric(false) // --> false
+3.2.2. Boolean
+and: (varargs b:boolean) returns true if all arguments are true. The function accepts varargs.
+
+and(true, true) // return true
+and(true, true, true) // return true
+and(true, false, true, true) // return false
+or: (varargs b:boolean) returns true if one of the arguments is true. The function accepts varargs.
+
+or(true, true) // return true
+or(true, true, true) // return true
+or(true, false, true, true) // return true
+or(false, false) // return false
+not: (b:boolean) negates the given boolean argument
+
+not(true)  // --> false
+not(false) // --> true
+isTrue: (b:boolean) returns true if the given boolean argument is true
+
+isTrue(true) // --> true
+isFalse: (b:boolean) returns true if the given boolean argument is false
+
+isFalse(true) // --> false
+isString: (obj) returns true if the given object is of type string
+
+isString("test") // --> true
+isString(0) // --> false
+isString(false) // --> false
+isString([]) // --> false
+isString([:]) // --> false
+isNumber: (obj) returns true if the given object is of type number
+
+isString("test") // --> false
+isString(0) // --> true
+isString(false) // --> false
+isString([]) // --> false
+isString([:]) // --> false
+isBoolean: (obj) returns true if the given object is of type boolean
+
+isString("test") // --> false
+isString(0) // --> false
+isString(false) // --> true
+isString([]) // --> false
+isString([:]) // --> false
+isCollection: (obj) returns true if the given object is of type collection
+
+isString("test") // --> false
+isString(0) // --> false
+isString(false) // --> false
+isString([]) // --> true
+isString([:]) // --> false
+isList: (obj) returns true if the given object is of type collection
+
+isString("test") // --> false
+isString(0) // --> false
+isString(false) // --> false
+isString([]) // --> true
+isString([:]) // --> false
+isMap: (obj) returns true if the given object is of type collection
+
+isString("test") // --> false
+isString(0) // --> false
+isString(false) // --> false
+isString([]) // --> false
+isString([:]) // --> true
+3.2.3. List
+listOf: (vararg obj) returns a list with each of the given elements as entries
+
+listOf("a", "b", "c", "d") // --> ["a", "b", "c", "d"]
+listOf(0, 1, 2, 3, 4) // --> [0, 1, 2, 3, 4]
+first: (l:list) returns the first element of the given list. throws an AtreusException if the given list is null.
+
+first(["a", "b", "c", "d"]) // --> "a"
+first([0, 1, 2, 3, 4]) // --> 0
+last: (l:list) returns the last element of the given list. throws an AtreusException if the given list is null.
+
+first(["a", "b", "c", "d"]) // --> "d"
+first([0, 1, 2, 3, 4]) // --> 4
+head: (l:list) returns the list except the last element
+
+head(["a", "b", "c", "d"]) // --> ["a", "b", "c"]
+head([0, 1, 2, 3, 4]) // --> [0, 1, 2, 3]
+tail: (l:list) returns the list except the first element
+
+head(["a", "b", "c", "d"]) // --> ["b", "c", "d"]
+head([0, 1, 2, 3, 4]) // --> [1, 2, 3, 4]
+take: (l:list, n:number) returns the requested amount of elements
+
+take(["a", "b", "c", "d"], 2) // --> ["a", "b"]
+take([0, 1, 2, 3, 4], 2) // --> [0, 1]
+drop: (l:list, n:number) returns the list except the amount of elements specified
+
+drop(["a", "b", "c", "d"], 2) // --> ["c", "d"]
+drop([0, 1, 2, 3, 4], 2) // --> [2, 3, 4]
+nth: (l:list, n:number) returns the nth element of the given list. Throws an AtreusException if the index is out of bounds or if the given list is null.
+
+nth(["a", "b", "c", "d"], 2) // --> "c"
+nth([0, 1, 2, 3, 4], 5) // --> throws AtreusException
+isEmpty: (l:list) returns true if the given list is empty
+
+isEmpty(["a", "b", "c", "d"]) // --> false
+isEmpty([]) // --> true
+isNotEmpty: (l:list) returns true if the given list is not empty
+
+isNotEmpty(["a", "b", "c", "d"]) // --> true
+isNotEmpty([]) // --> false
+filter: (l:list, filter:Predicate) returns a filtered list by applying the given predicate
+
+filter([0, 1, 2, 3, 4], (n) -> eq(mod(n, 2), 0)) // --> [0, 2, 4]
+filter([0, 1, 2, 3, 4], (n) -> {
+   eq(mod(n, 2), 0))
+}
+append: (l:list, obj) appends the given element to the given list
+
+append(["a", "b", "c"], "d") // --> ["a", "b", "c", "d"]
+contains: (l:list, obj) returns true if the given list contains the given element
+
+contains(["a", "b", "c"], "a") // --> true
+contains(["a", "b", "c"], "d") // --> false
+remove: (l:list, obj) removes the given element from the given list
+
+remove(["a", "b", "c"], "c") // --> ["a", "b"]
+distinct: (l:list) returns the distinct elements of the specified list.
+
+distinct(["a", "b", "a"]) // --> ["a", "b"]
+map: (l:list, mapper:Function) returns the give list after applying the given mapper to it
+
+map([1, 2, 3], (n) -> mul(n, n)) // --> [1, 2, 9]
+reduceToMap: (l:list, mapper:Function) returns a map by applying each entry of a list of maps to it
+
+let list = listOf(["a":0], ["b":1], ["c":2])
+reduceToMap(list) // --> ["a":0, "b":1, "c":2]
+flatten: (l:list) returns a flattened list by adding each entry of a list of lists to it
+
+flatten([[0, 1], [2, 3], [4, 5]]) // --> [0, 1, 2, 3, 4, 5]
+forEach: (l:list, f:Function) iterates through each element of the given list
+
+forEach([0, 1, 2], (n) -> info(n))
+forEachIndexes: (l:list, f:Function) iterates through each element of the given list with an index argument
+
+forEachIndexed([0, 1, 2], (entry, index) -> info("entry {{entry}} at index {{index}}"))
+sort: (l:list, c:Function?) returns a sorted list. The function takes an optional second comparator argument.
+
+sort([4, 3, 2, 1])       // --> [1, 2, 3, 4]
+sort([1, 2, 3, 4], true) // --> [4, 3, 2, 1]
+sort([1, 2, 3, 4], (a, b) -> {
+   if (lt(a, b), -1)
+   else if (gt(a, b), 1)
+   else 0
+}) // --> [4, 3, 2, 1]
+reverse: (l:list) returns the given list in reversed order
+
+reverse([1, 2, 3, 4]) // --> [4, 3, 2, 1]
+find: (l:list, p:Predicate) returns the first element of the given list which corresponds to the given predicate
+
+find([1, 2, 3, 4], (n) -> gt(n, 2)) // --> 3
+addAt: (l:list, i:number, obj) adds the given object at the given index into the given list
+
+addAt(["a", "c"], 1, "b") // --> ["a", "b", "c"]
+max: (l:list) returns the greatest element of the list
+
+max([5, 4, 3, 2, 1]) // --> 5
+min: (l:list) returns the lowest element of the list
+
+max([5, 4, 3, 2, 1]) // --> 1
+sum: (l:list) returns the sum of all numbers in the list
+
+sum([5, 4, 3, 2, 1]) // --> 15
+product: (l:list) returns the product of all numbers in the list
+
+product([5, 4, 3, 2, 1]) // --> 120
+complement: (l1:list, l2:list) returns the complement of list1 and list2
+
+complement([4, 3, 2], [1, 2, 3]) // --> [4]
+intersect: (l1:list, l2:list) returns the intersect of list1 and list2
+
+complement([4, 3, 2], [1, 2, 3]) // --> [2, 3]
+3.2.4. Map
+mapOf: (vararg tuple) returns a map of the parameters.
+
+mapOf("a": "b", "c": 1, "d": true) // --> ["a":"b", "c":1, "d":true]
+filterMap: (m:map, p:Predicate) returns a filtered map by applying the given predicate
+
+let map = ["a":0, "b":1, "c":2]
+filterMap(map, (k, v) -> eq(mod(v, 2), 0)) // --> ["a":0, "c":2]
+filterMap(map, (k, v) -> {
+   eq(mod(v, 2), 0))
+}
+keys: (m:map) returns all keys of the given map
+
+keys(["a":0, "b":1, "c":2]) // --> ["a", "b", "c"]
+put: (m:map, k, v) puts the given element to the given map and returns the map
+
+put([:], "a", 0) // --> ["a":0]
+get: (m:map, k) gets a value from the map m at key k
+
+get(["a":"b"], "a") // --> "b"
+get([:], "a") // --> null
+3.2.5. Bytes
+bytes: (str:string) returns the bytes representation of the given string
+
+bytes("test") // --> [116, 101, 115, 116]
+encodeBase64: (b:byte[]) encodes the given bytes to a base64 representation
+
+encodeBase64(bytes("test")) // --> dGVzdA==
+decodeBase64: (b:byte[]) decodes the given base64 bytes to a byte array representation
+
+string(decodeBase64(encodeBase64(bytes("test")))) // --> "test"
+decodeBase64: (s:String) decodes the given base64 String to a byte array representation
+
+string(decodeBase64("dGVzdA==")) // --> "test"
+3.2.6. Object
+isNotNull: (obj) returns true if the given object is not null
+
+isNotNull("test") // --> true
+isNull: (obj) returns true if the given object is null
+
+isNull($unknown?) // --> true
+size: (obj) returns the size of the given object. The object type can be a string, map, collection or array. Throws an AtreusException if the type can not be processed
+
+size("test") // --> 4
+size(["a":0, "b":1]) // --> 2
+size([1, 2, 3, 4]) // --> 4
+compare: (obj1, obj2) returns -1 if the first argument is lower than the second one or 1 if the first argument is greater. Returns 0 otherwise. Supported argument types are string and number.
+
+compare("a", "b") // --> -1
+compare(1, 0) // --> 1
+compare(1, 1) // --> 0
+typeOf: (obj) returns the type of the given object
+
+typeOf("text") // --> String
+typeOf(0.5) // --> Number
+3.2.7. String
+substr: (str:string, i1:number, i2:number?) returns the substr from the startIndex until the endIndex.
+
+substr("testtest", 4) // -> "test"
+substr("test", 1, 3) // -> "es"
+length: (str:string) returns the length of the given string
+
+length("test") // --> 4
+concat: (vararg str:string) concatenates the given strings
+
+concat("t", "e", "s", "t") // --> "test"
+string: (bytes:byte[]) converts the given bytearray to a string
+
+string(bytes("test")) // --> "test
+replace: (str1:string, str2:string) replaces the first string occurrence of the given substr
+
+replace("abcdabcd", "a", "x") // --> "xbcdabcd
+replaceAll: (str1:string, str2:string) replaces all string occurrence of the given substr
+
+replace("abcdabcd", "a", "x") // --> "xbcdxbcd
+uppercase: (str:string) converts each character of the given string to an uppercase character.
+
+uppercase("abc") // --> "ABC"
+lowercase: (str:string) converts each character of the given string to an lowercase character.
+
+lowercase("ABC") // --> "abc"
+capitalize: (str:string) capitalizes the given string
+
+capitalize("abc") // --> "Abc"
+isBlank: (str:string) returns true if the given string is blank
+
+isBlank("") // --> true
+isBlank("   ") // --> true
+isBlank("text") // --> false
+isNotBlank: (str:string) returns true if the given string is not blank
+
+isBlank("") // --> false
+isBlank("   ") // --> false
+isBlank("text") // --> true
+indexOf: (str:string, subString:string) returns the index of the first occurrence of the given subString variable, otherwise -1
+
+indexOf("test", "t") // --> 0
+indexOf("test", "st") // --> 2
+indexOf("test", "text") // --> -1
+indexOf(null, "t") // --> -1
+indexOf("test", null) // --> -1
+3.2.8. Date
+sysdate: () returns the current sysdate. The function takes an optional zoneId argument
+
+sysdate() // --> {Date Object}
+sysdate("Europe/Vienna") // --> {Date Object}
+toTimeMillis: (d:Date) returns the milliseconds of the given date since and throws an AtreusException if the given date is null.
+
+toTimeMillis(sysdate()) // --> {Number Ojbect}
+parseDate: (str1:string, str2:string)Parses the given string with the given pattern to a date
+
+parseDate("01.01.2010", "dd.MM.yyyy") // --> Date of shape dd.MM.yyyy
+format: (d:Date, str:string)Formats the given date with the given pattern to a string
+
+format(sysdate(), "dd.MM.yyyy") // --> String of shape dd.MM.yyyy
+Formatting can be done with
+
+format(sysdate(), "dd.MM.yyyy")
+format(sysdate("Europe/Berlin"), "dd.MM.yyyy")
+The format is similar to the java date format.
+
+y   = year   (yy or yyyy)
+M   = month  (MM)
+d   = day in month (dd)
+h   = hour (0-12)  (hh)
+H   = hour (0-23)  (HH)
+m   = minute in hour (mm)
+s   = seconds (ss)
+S   = milliseconds (SSS)
+z   = time zone  text        (e.g. Pacific Standard Time...)
+Z   = time zone, time offset (e.g. -0800)
+
+
+yyyy-MM-dd                  2009-12-31
+dd-MM-YYYY                  31-12-2009
+yyyy-MM-dd HH:mm:ss         2009-12-31 23:59:59
+HH:mm:ss.SSS                23:59.59.999
+yyyy-MM-dd HH:mm:ss.SSS     2009-12-31 23:59:59.999
+yyyy-MM-dd HH:mm:ss.SSS Z   2009-12-31 23:59:59.999 +0100
+plusNanos: (d:Date, n:number) adds the given nanos to the given date
+
+plusNanos(sysdate(), 10) // --> {Date Object}
+plusNanos(sysdate(), -10) // --> {Date Object}
+plusSeconds: (d:Date, n:number) adds the given seconds to the given date
+
+plusSeconds(sysdate(), 10) // --> {Date Object}
+plusSeconds(sysdate(), -10) // --> {Date Object}
+plusMinutes: (d:Date, n:number) adds the given minutes to the given date
+
+plusMinutes(sysdate(), 10) // --> {Date Object}
+plusMinutes(sysdate(), -10) // --> {Date Object}
+plusHours: (d:Date, n:number) adds the given Hours to the given date
+
+plusHours(sysdate(), 10) // --> {Date Object}
+plusHours(sysdate(), -10) // --> {Date Object}
+plusDay: (d:Date, n:number) adds the given days to the given date
+
+plusDays(sysdate(), 10) // --> {Date Object}
+plusDays(sysdate(), -10) // --> {Date Object}
+plusWeeks: (d:Date, n:number) adds the given weeks to the given date
+
+plusWeeks(sysdate(), 10) // --> {Date Object}
+plusWeeks(sysdate(), -10) // --> {Date Object}
+plusMonths: (d:Date, n:number) adds the given months to the given date
+
+plusMonths(sysdate(), 10) // --> {Date Object}
+plusMonths(sysdate(), -10) // --> {Date Object}
+plusYears: (d:Date, n:number) adds the given years to the given date
+
+plusYears(sysdate(), 10) // --> {Date Object}
+plusYears(sysdate(), -10) // --> {Date Object}
+dayOfWeek: (d:Date) Returns the day of week as an integer from the given date. The int value follows the ISO-8601 standard, from 1 (Monday) to 7 (Sunday).
+
+dayOfWeek(sysdate()) // --> {Number Object}
+3.2.9. Crypto
+sha256: (str:string) returns the sha256 hash of the given string
+
+sha256("test") // --> "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
+3.3. Custom features
+Atreus features are wrappers of third-party libraries which can be used within atreus scripts. In order to register a feature call the addFeature method of the AtreusBinding.
+
+val binding = AtreusBinding()
+binding.addFeature(CustomFeature())
+3.3.1. Monads
+There are two groups of monads: ScalarMonad and ReactiveMonad. ScalarMonad is used as a wrapper for values which makes it easier to handle non existing values and errors. ReactiveMonad helps with handling non existing values and errors for asynchronous tasks.
+
+ScalarMonad
+A ScalarMonad allows you to specify error handling, add a default value and transform the value it wraps.
+
+Types of scalar monads
+There are three types of scalar monads which may transition from one to the other as methods are called on them.
+
+Some
+SomeMonad wraps a value that is present.
+
+None
+NoneMonad means that there is no value. It is similar to NULL but you can call functions on it without having to expect an exception to be thrown.
+
+Error
+ErrorMonad wraps an exception and also allows you to call functions on it.
+
+Default value
+.defaultIfEmpty (value)
+
+Replaces the monad with a SomeMonad containing the provided value if this Monad is a NoneMonad (i.e. if it has no value).
+
+Error handling
+There are multiple possibilities for handling errors.
+
+Returning the same value on any error
+.onErrorReturn (value)
+
+Replaces the monad with a SomeMonad containing the provided value if this Monad is an ErrorMonad.
+
+srError('forced error')
+    .onErrorReturn('fallback value')
+In the example above we fake an error using srError (explained in more detail later in this documentation). The code returns SomeMonad("fallback value").
+
+Returning a value only for specific errors
+.onErrorReturn (predicate: function, value)
+
+Replaces the monad with a SomeMonad containing the provided value if this Monad is an ErrorMonad and the exception it wraps matches the given predicate.
+
+srError('forced error')
+    .onErrorReturn(t -> {
+            when(t) {
+                is "AtreusRuntimeException" -> true
+                default -> false
+            }
+        },
+        "there has been an error"
+    )
+    .onErrorReturn("something else went wrong")
+The code above returns SomeMonad("there has been an error") while the example below remains an ErrorMonad.
+
+srSome(1)
+    .map(it -> div(it, 0)) // causes a div by 0 error
+    .onErrorReturn(t -> {
+            when(t) {
+                is "AtreusRuntimeException" -> true
+                default -> false
+            }
+        },
+        "there has been an error"
+    )
+The following example returns SomeMonad("something else went wrong")
+
+srSome(1)
+    .map(it -> div(it, 0)) // causes a div by 0 error
+    .onErrorReturn(t -> {
+            when(t) {
+                is "AtreusRuntimeException" -> true
+                default -> false
+            }
+        },
+        "there has been an error"
+    )
+    .onErrorReturn("something else went wrong")
+Returning a different monad
+.onErrorResume (fallback: function)
+
+Replaces the monad with the Monad returned by the callback function if this Monad is an ErrorMonad.
+
+This example returns SomeMonad("safely handled value").
+
+srError('forced error')
+    .onErrorResume(ex -> srSome('safely handled value'))
+It is also possible to return a different error:
+
+srError('forced error')
+    .onErrorResume(ex -> srError('oops'))
+You can even return a NoneMonad.
+
+srError('forced error')
+    .onErrorResume(ex -> srNone())
+Transforming the wrapped value
+.map (mapper: function)
+
+If this Monad is a SomeMonad the mapper function will be called. The value wrapped by the SomeMonad will be passed into the mapper function.
+
+If this Monad is a NoneMonad or an ErrorMonad the mapper function will not be called.
+
+This code returns SomeMonad(12).
+
+srSome(10)
+    .map(it -> add(it, 2))
+This code returns NoneMonad and the mapper function is never called.
+
+srNone()
+    .map(it -> add(it, 2))
+In this example the ErrorMonad remains.
+
+srError('forced error')
+    .map(it -> add(it, 2))
+In case something goes wrong in your mapper function, the Monad will be transformed to an ErrorMonad.
+
+srSome(10)
+    .map(it -> div(it, 0))
+.flatMap (mapper: function)
+
+If this Monad is a SomeMonad the mapper function will be called. The value wrapped by the SomeMonad will be passed into the mapper function which can return any Monad. This way you can transform your SomeMonad into a different SomeMonad, NoneMonad or ErrorMonad if you need to.
+
+If this Monad is a NoneMonad or an ErrorMonad the mapper function will not be called.
+
+In this example we transform the SomeMonad(10) to a NoneMonad.
+
+srSome(10)
+    .flatMap(it -> srNone())
+Creating scalar monads
+In case you want to manually create a scalar monad there are three possible methods: srSome, srNone and srError.
+
+Maybe there is a value
+srSome (value)
+
+Creates a SomeMonad wrapping the provided value if you pass a non NULL value.
+
+Creates a NoneMonad if the provided value is NULL.
+
+There is no value
+srNone ()
+
+Creates a NoneMonad.
+
+There has been an error
+srError (message: string)
+
+Creates an ErrorMonad with the provided message.
+
+srError (cause: throwable)
+
+Creates an ErrorMonad with the provided cause.
+
+srError (message: string, cause: throwable)
+
+Creates an ErrorMonad with the provided message and cause.
+
+ReactiveMonad
+A ReactiveMonad allows you to specify error handling, add a default value and transform the result of asynchronous work.
+
+Default value
+.defaultIfEmpty (value)
+
+Letâ€™s take the send function from ProtoScript as an example. It returns a reactive monad that completes without a value in case it succeeds. If we want to have a specific value returned on success, we can use the defaultIfEmpty function.
+
+send(smtp(smtpConfig) {
+    // ... omitted for the sake of brevity
+})
+.defaultIfEmpty("default value")
+This way, whenever send succeeds, it will return default value.
+
+Error handling
+Another possible outcome of the send function is that it fails to send the email. There are multiple possibilities for handling errors.
+
+Note: Unfortunately you canâ€™t use try / catch on reactive monads since the error occurs asynchronously and therefore just bypasses the catch block.
+
+Returning the same value on any error
+.onErrorReturn (value)
+
+In case you always want to return the same value no matter what error occured, you can use the onErrorReturn function and pass the value to return to it.
+
+send(smtp(smtpConfig) {
+    // ... omitted for the sake of brevity
+})
+.onErrorReturn("something went wrong")
+Here send will return the value something went wrong in case there is an error while sending the email.
+
+Returning a value only for specific errors
+.onErrorReturn (predicate: function, value)
+
+You may also supply a predicate to only return a fallback value for certain errors:
+
+send(smtp(smtpConfig) {
+    // ... omitted for the sake of brevity
+})
+.onErrorReturn(t -> {
+        when(t) {
+            is "SendFailedException" -> true
+            default -> false
+        }
+    },
+    "unable to send email"
+)
+.onErrorReturn("something went wrong")
+Returning a different reactive monad
+.onErrorResume (fallback: function)
+
+In previous versions, the send function always returned a map containing a boolean for success and also a message in case something went wrong. To restore this behaviour, we can combine defaultIfEmpty and onErrorResume:
+
+send(smtp(smtpConfig) {
+    // ... omitted for the sake of brevity
+})
+.defaultIfEmpty(mapOf("success": true))
+.onErrorResume(ex -> rxSome(mapOf("success": false, "message": ex.getMessage())))
+This is just an example of what you can do with onErrorResume. In addition to rxSome there are also rxNone and rxError described in more detail later in this documentation.
+
+Combining different error handling methods
+Let us revisit the sample code above where we only supplied a fallback value for a specific Exception. Say we want to return one value in case there is a SendFailedException and a different value in all other error cases.
+
+send(smtp(smtpConfig) {
+    // ... omitted for the sake of brevity
+})
+.onErrorReturn(t -> {
+        when(t) {
+            is "SendFailedException" -> true
+            default -> false
+        }
+    },
+    "unable to send email"
+)
+.onErrorReturn("something else went wrong")
+This way the send function will return the value unable to send email in case there is a SendFailedException but if there is a different cause for the error the value something else went wrong will be returned.
+
+Transforming the result
+.map (mapper: function)
+
+Transforms the values by applying a synchronous function.
+
+The following sample code will receive the value 100 and add 2 to it, returning 102 as result.
+
+rxSome(100)
+    .map(value -> add(value, 2))
+.flatMap (mapper: function)
+
+Transforms the values into reactive monads, which may perform non-blocking operations.
+
+This sample will ignore the value 100 that would usually be returned by the reactive monad and replaces it with the value 200.
+
+rxSome(100)
+    .flatMap(value -> rxSome(200))
+You can also return nothing as shown in the following sample:
+
+rxSome(100)
+    .flatMap(value -> rxNone())
+You may also use flatMap to chain another asynchronous call. In the following sample we are going to call a remote API after successfully sending an email.
+
+send(smtp(smtpConfig) {
+    // ... omitted for the sake of brevity
+})
+.defaultIfEmpty("just produce a value so flatMap can trigger")
+.flatMap(value -> {
+    httpGet("https://www.leftshift.one").execute()
+})
+Creating reactive monads
+In case you want to manually create a reactive monad there are three possible methods: rxSome, rxNone and rxError.
+
+To supply one or more values, you can use rxSome. To supply many values, use rxSomeIterable
+
+rxSome (value)
+
+rxSome (value1, value2)
+
+rxSome (value1, value2, value3)
+
+rxSome (value1, value2, value3, value4)
+
+rxSome (value1, value2, value3, value4, value5)
+
+rxSomeIterable (values: iterable)
+
+To signal that there wonâ€™t be any value, use rxNone.
+
+rxNone ()
+
+To signal an exception, use rxError.
+
+rxError (message: string)
+
+rxError (cause: throwable)
+
+rxError (message: string, cause: throwable)
+
+3.3.2. PDFScript
+PDFScript is an open source software library for script based PDF generation. The PDFScript feature extends atreus to create PDF documents by defining the pdf content within the atreus script.
+
+pdf (format: function)
+
+initializes a PDF-Script. format specifies the format of the document. returns the pdf as a byte array
+
+dinA4 (content: function)
+
+sets the format of the PDF. In content the content of the PDF can be set.
+
+pdf(dinA4 {
+    paragraph { text ("hello world") }
+})
+For more information you can read the documentation on PdfScript.
+
+3.3.3. ProtoScript
+ProtoScript is an open source software library for script based protocol invocation. The ProtoScript feature extends atreus to invoke protocols by defining the invocations within the atreus script.
+
+send(request: function)
+
+Initializes the SMTP request. Returns a ReactiveMonad.
+
+smtp(config: function)
+
+Allows you to set details of the mail to be sent.
+
+config argument
+
+config.host(host: string): Setter function for host.
+
+config.port(port: number): Setter function for the port.
+
+config.username(username: string): Setter function for the username.
+
+config.password(password: string): Setter function for the password.
+
+config.startTls(startTls: boolean): Enable or disable TLS. Per default TLS is enabled
+
+config.sslProtocols(protocols: string): Setter function for the enabled protocols. A space separated list can be passed.
+
+function smtpConfig(config) {
+    config.host("smtp.domain.com")
+    config.port(465)
+    config.username("username")
+    config.password("password")
+    config.sslProtocols("TLSv1.2")
+}
+
+send(smtp(smtpConfig) {
+    header("An <no-reply@foo.bar>", "Test") {
+        to("foo@domain.com")
+    }
+    content {
+        text("Hello from the other side.")
+    }
+    attachment {
+        pdf(decodeBase64(bytes($pdf)), "Example attachment")
+    }
+})
+In case you want to handle success and error in a behaviour, you may also use defaultIfEmpty() and onErrorReturn().
+
+function smtpConfig(config) {
+    config.host("smtp.domain.com")
+    config.port(465)
+    config.username("username")
+    config.password("password")
+    config.sslProtocols("TLSv1.2")
+}
+
+send(smtp(smtpConfig) {
+    header("An <no-reply@foo.bar>", "Test") {
+        to("foo@domain.com")
+    }
+    content {
+        text("Hello from the other side.")
+    }
+    attachment {
+        pdf(decodeBase64(bytes($pdf)), "Example attachment")
+    }
+})
+.defaultIfEmpty(mapOf("success":true))
+.onErrorReturn(mapOf("success":false, "message": "Unable to send mail."))
+For more information you can read the documentation on Protoscript.
+
+3.3.4. Webflux
+Webflux is the reactive programming support for Web applications in Spring Framework 5. The Webflux feature extends atreus to invoke http calls by defining the invocations within the atreus script.
+
+httpGet(url: string)
+
+Initialize a GET request
+
+httpPost(url: string)
+
+Initialize a POST request
+
+httpPut(url: string)
+
+Initialize a PUT request
+
+httpPatch(url: string)
+
+Initialize a PATCH request
+
+httpDelete(url: string)
+
+Initialize a DELETE request
+
+At first you have to specify the URL where the request is going to be sent by invoking one of the http* methods. Next, you can specify the header information of the request:
+
+header(key: string, value: string)
+
+Set a header field.
+
+Moreover the request body can be set:
+
+body(json: map)
+
+Specify the body if you need it.
+
+At the end of your request, you have to execute it:
+
+execute()
+
+Executes the request and returns the response body.
+
+Additionally, it is possible to map the json response:
+
+httpPost("https://domain.com/api/")
+    .header("Content-Type", "application/json")
+    .header("api-secret", "top_secret")
+    .body(
+        mapOf(
+            param1: 1
+        )
+    )
+    .execute()
+    .map(response -> $response.abc)
+Initialize the request and set the URL.
+Set multiple header parameters.
+Set the request body.
+Execute the request.
+Map the JSON response.
+If you want to get the HTTP status, you can call:
+
+executeAndGetStatus()
+
+Executes the request and returns the response body and the HTTP status
+
+httpGet("https://domain.com/api/")
+    .executeAndGetStatus()
+    .map(response ->
+        mapOf(
+            "statusCode": $response.status.code,
+            "statusName": $response.status.name,
+            "isError": $response.status.isError,
+            "body": $response.body
+        )
+    )
+Initialize the request and set the URL.
+Execute the request.
+Map the JSON response.
+Requests with multipart/form-data
+Requests that include binary files in the body are usually of type multipart/form-data. To send multipart/form-data:
+
+add .header("Content-Type", "multipart/form-data") to your request
+
+add a multipart body to the request.
+
+This body can be generated with the builder multipartBody and passed to the body function of any request.
+
+multipartBody()
+
+Initializes a multipart body builder
+
+Next you can add parts to the body:
+
+part(key: string, value: string)
+
+Adds a plain text key-value pair to the body
+
+part(key: string, data: byte[], fileName: string)
+
+Adds a file with specified fileName and binary data to the body at key field. The mime type is guessed via file extension.
+
+At last the body must be built to be passed into a request:
+
+build()
+
+Builds the multipart body and returns a map that should be passed into a request
+
+httpPost("https://domain.com/files"))
+    .header("Content-Type", "multipart/form-data")
+    .body(
+        multipartBodyBuilder()
+            .part("userId", "1234")
+            .part("category", "Holiday pictures")
+            .part("file", decodeBase64(bytes($base64Image)), "beach1.png")
+            .build()
+    )
+    .execute()
+Initialize the multipart body builder
+Add any number of text key-value-pairs to the body
+Add any number of files to the body. $base64Image is an image encoded as base64 string that we decode to binary.
+Build the body and return it
+3.3.5. Slf4j
+With the use of the Slf4j feature an atreus script is able to log slf4j events.
+
+info(logMessage: string)
+
+Adds logMessage to logs with logging level 'info'.
+
+info("info message")
+warn(logMessage: string)
+
+Adds logMessage to logs with logging level 'warn'.
+
+warn("warn message")
+error(logMessage: string)
+
+Adds logMessage to logs with logging level 'error'.
+
+error("error message")
+3.3.6. GaiaQuery
+The GaiaQuery feature extends atreus to enable the access to the gaia tables. All Gaia Query functionality such as decryption, extraction of map values, etc is also provided.
+
+query()
+
+.withApiKey(apiKey : String)
+
+.withSecret(secret: String)
+
+.execute(statement: String)
+
+Builds a call to GaiaQuery to send a statement. Each returned row is delivered as a Map<String,Any?> where the Key is the columnName (or alias)
+
+query()
+.withApiKey("apiKeyValue")
+.withSecret("secretValue")
+.execute('select decrypt(data) -> qualifier from table where key="test"')
+A.T.L.A.S. functions [Deprecated]
+At first you have to specify your key and signature.
+
+atlas(key: string, signature: string): Initialize a A.T.L.A.S. request.
+
+Next, the GraphQL statement needs to be passed.
+
+statement(statement: string): Setter function for the GraphQL statement.
+
+If you used variables in the statement you can specify them.
+
+variables(map: Map): Setter function for the variables and their values.
+
+At the end of your request, you have to execute it:
+
+execute(): Executes the request.
+
+Additionally, it is possible to map the json response:
+
+atlas()
+    .key("key").secret("secret")
+    .statement("query Atlas($text: String!) { nlu(text: $text) { ner { nerStrategy { data } } }}")
+    .variables(mapOf("text": "this is an example text"))
+    .execute()
+    .map(response -> $response.abc)
+Initialize the request and set key and signature.
+Set the GraphQL statement.
+Set the used variables.
+Execute the request.
+Map the JSON response.
+3.3.7. BYOM Connector [DEPRECATED]
+Running BYOM instances may be queried directly using the zmq() function. It is within the developers responsibility to create a valid (accordingly to the schema) message using the finalizing execute() function.
+
+This is a reactive function
+zmq(): Initializes the ZMQ connection builder
+
+to(name: string): registered name of the BYOM/BYOS instances
+
+withSchemaType(type: string): Type of the schema as skills may implement multiple contracts
+
+execute(message: Map): sends the given message to the skill
+
+zmq()
+    .to("keios-spacy")
+    .withSchemaType("ner")
+    .execute(mapOf("message" : mapOf("text", "ich suche einen fleischhauer in der steiermark")))
+3.3.8. Skills Connector
+Running skills may be queried directly using the skills() function. It is within the developers responsibility to create a valid (accordingly to the schema) message using the finalizing evaluate() function.
+
+This is a reactive function
+skills(): Initializes the skills connection builder
+
+connect(provision_name: String): registered name of the skill provision
+
+timeout(milliseconds: Int): timeout after which the task will continue even if no answer where given within time
+
+evaluate(message: Map): sends the given message to the skill
+
+evaluate(namespace: String, message: Map): sends the given message to the skill using the supplied namespace
+
+skills()
+    .connect("provision-1")
+    .timeout(100000)
+    .execute(mapOf("text", "ich suche einen fleischhauer in der steiermark"))
+3.4. Examples
+3.4.1. n!
+function fakultaet(n) -> {
+   when (n) {
+      is 0 -> 1
+      default -> mul(n, fakultaet(sub(n, 1)))
+   }
+}
+fakultaet(5)
+3.4.2. ringarea
+function ringarea = (outer, inner) -> mul(pi(), sub(pow(outer, 2), pow(inner, 2)))
+3.4.3. find the sum of all the multiples of 3 or 5 below 1000
+function gaussianSumFormula(n, p) {
+   mul(mul(n, floor(div(p, n))), div(add(floor(div(p, n)), 1), 2))
+}
+sub(add(gaussianSumFormula(3, 999), gaussianSumFormula(5, 999)), gaussianSumFormula(15, 999))
+3.4.4. what is the largest prime factor of the number 123?
+function primeFactors(n, f = 2) {
+   when(n) {
+      is 1 -> []
+      is eq(mod(n, f), 0) -> append(primeFactors(div(n, f), f), f)
+      default -> primeFactors(n, add(f, 1))
+   }
+}
+max(primeFactors(123))
+3.4.5. is 41 a prime number?
+function isPrime(n, i = 2) {
+   when(n) {
+      is lt(n, 2) -> eq(n, 2)
+      is eq(mod(n, i), 0) -> false
+      is gt(mul(i, i), n) -> true
+      default -> isPrime(n, add(i, 1))
+   }
+}
+isPrime(141)
+4. GAIA Query - Query Language
+Query and work with data aggregated and contained within GAIA ecosystem SQL-Style.
+
+4.1. Usage
+The syntax of gaia-query is based on the well-known SQL syntax but the aware that gaia-query only supports a sub-set of SQLâ€™s functionality.
+
+4.1.1. Basics
+Currently only SELECT statements on certain tables are supported. You may query from the following tables with the corresponding table names:
+
+intent: Contains all intents within the system for the current tenant
+
+intentdetection: Contains the actual text input from the end-user
+
+interaction: Holds all triggered interactions (Prompts, Logs, Statements etc.)
+
+A more detailed explanation of the tables and their columns may be found in the appendix.
+
+Even though all examples are written using the familiar capitalized keywords style (SELECT something FROM something) this is only for readability and totally up to the user. gaia-query is case insensitive just as SQL.
+The most simple SELECT statement, the SELECT ALL, works ajar to its SQL counterpart:
+
+SELECT * FROM intent
+Where as the results may look like this (simplified):
+
+partitionkey	sortingkey	data
+0
+
+-3376759273846744175
+
+aGVsbG8gd29ybGQ=
+
+0
+
+-466915212431575099
+
+Zm9vYmFyIGlzIGJlc3QgYmFy
+
+Selecting specific columns
+Sometimes it might be useful to select only a certain column you might be interested in. Of course gaia-query supports that just the way it works in SQL:
+
+SELECT partitionkey FROM intent
+partitionkey
+0
+
+0
+
+Column alias
+If you are not satisfied with the output name of the column you are free to change it to your liking using the AS operator. Letâ€™s say you want to show partitionkey AS identity you are free to do so:
+
+SELECT partitionkey AS identity FROM intent
+identity
+0
+
+0
+
+VoilÃ !
+
+4.1.2. Extension functions
+Sometimes you may find strange results most particularly in data columns. This is due to the fact that sensitive data is always stored encrypted within the database and you only see a base 64 encoded representation of the data. Since the data is yours you are free to decrypt the data and take a look behind the curtain. For that (and other reasons) gaia-query supports a set of extension functions that may work on columns or tables itself.
+
+decrypt(column): Decrypts columns and presents you the unencrypted data
+
+SELECT decrypt(data) from intent
+data
+{"qualifier": "test", "appendent": "another test", "utterance" : [â€¦â€‹] â€¦â€‹ }
+
+As you can see data columns are stored as JSON. You may access subfields within the JSON using Section 4.1.3
+4.1.3. Subfield selections
+Since some data might be stored as nested datastructures such as JSON or XML gaia-query allows you to query subfields within a column using subfield selections.
+
+Letâ€™s say you got something like this:
+
+student
+{"firstName": "Johnny", "lastName": "Longterm", "age": 38 }
+
+{"firstName": "Peter", "lastName": "Bachelor", "age": 23 }
+
+and you want to select just the lastName of the students. You can achieve this using the subselect operator â†’:
+
+SELECT student -> lastName from students
+lastName
+"Longterm"
+
+"Bachelor"
+
+You are free to combine functions and the subfield selection operator to, for example access data from an encrypted field: SELECT decrypt(data) â†’ qualifier FROM intent.
+4.1.4. Aggregate functions
+Oftentimes one has no interest in the exact contents of a table but in counts or groupings. This is what aggregate functions are for.
+
+count(*): Returns the count of the returned rows
+
+SELECT count(*) from students
+yields:
+
+count(*)
+2
+
+4.1.5. GROUP BY clause
+Just as in SQL the GROUP BY clause can be used to group rows that have the same values into summary rows. The GROUP BY statement is commonly used with Section 4.1.4.
+
+SELECT COUNT(*), student -> age FROM students GROUP BY student -> age
+counts students by their age could yield something like this:
+
+count(*)
+
+student â†’ age
+
+1
+
+38
+
+5
+
+25
+
+3
+
+18
+
+4.1.6. HAVING clause
+Since the Section 4.1.7 is inflexible and can not be used with aggregate functions you might use the HAVING clause instead when using the Section 4.1.5 or Section 4.1.4. So HAVING allows you to further filter aggregated result rows based on the given Section 4.1.8.
+
+SELECT COUNT(*), student -> age FROM students GROUP BY student -> age HAVING age > 30
+would yield only students aged above 30:
+
+count(*)
+
+student â†’ age
+
+1
+
+38
+
+4.1.7. WHERE clause
+The WHERE clause can be used to filter rows based on certain criteria.
+
+Can not be used togeher with Section 4.1.5 and Section 4.1.4
+Sometimes you may want to filter the returned result rows based on a Section 4.1.8 you defined.
+
+SELECT student â†’ lastName FROM students WHERE
+
+4.1.8. Condition
+Conditions may be combined or negated using the supported logical operators:
+
+AND
+
+OR
+
+NOT
+
+and may be constructed using the following predicate expressions:
+
+BETWEEN x AND y: Results is between x and y (BETWEEN 2 AND 5)
+
+x > y : x is greater than y
+
+x < y: x is lower than y
+
+x >= y: x is greater/equals than y
+
+x <= y: x is lower/equals than y
+
+x <> y: x is not equals to y
+
+x = y: x is equals to y
+
+4.1.9. Joins
+Joins allow you to combine result sets from two or more tables based on a related column between them.
+
+Currently the following joins are supported:
+
+INNER JOIN
+
+LEFT JOIN
+
+RIGHT JOIN
+
+FULL JOIN
+
+Example:
+
+    SELECT decrypt(data) -> qualifier, decrypt(text)
+      FROM intent
+INNER JOIN intentdetection
+        ON intent.sortingKey = intentdetection.reference
+Column name conflicts
+If you use a join it is possible that two columns have conflicting (=equal) names.
+
+When selecting columns with conflicting names, it is necessary to use table and column aliases.
+Table aliases can be added to the referenced tables by adding AS exampleAlias after the FROM and JOIN clause. They MUST be used as prefix to resolve all columns in the ON clause.
+
+    SELECT decrypt(text)
+      FROM intent AS i
+INNER JOIN intentdetection AS id
+        ON i.sortingKey = id.reference
+It is always necessary to add a column alias to columns that use a table alias.
+
+-- Table aliases must only be used with conflicting columns.
+-- When table aliases are used in the select, these columns must be aliased as well.
+    SELECT intent.createtime AS intentCreateTime, detection.createtime AS detectionTime, decryptStr(text)
+      FROM intent AS intent
+INNER JOIN intentdetection AS detection
+        ON detection.partitionkey = intent.partitionkey
+4.1.10. ORDER BY clause
+The ORDER BY clause can be used to guarantee that the rows in the result set are sorted.
+
+Syntax:
+
+COLUMN_NAME (ASC | DESC)
+
+The columns of the ORDER BY clause must correspond to the columns in the select list.
+
+You can specify multiple columns, in such case, the result set is sorted by the first column and then that sorted result set is sorted by the second column, and so on.
+
+The use of ASC or DESC determines whether the values in the specified column should be sorted in ascending or descending order. If ASC or DESC are not provided, the sorting type ASC will be used as default.
+
+Example:
+
+SELECT name, lastName FROM students ORDER BY name ASC, lastName DESC
+Version 3.1.0
+Last updated 2020-10-28 14:52:52 +0100

@@ -13,9 +13,6 @@ log = logging.getLogger("skill")
 
 
 def evaluate(payload: dict, context: dict) -> dict:
-    log.info(f"Received payload: {payload}")
-    log.info(f"Received context: {context}")
-
     log.info("Wordcloud started!")
 
     text = ""
