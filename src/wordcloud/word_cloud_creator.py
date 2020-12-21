@@ -15,7 +15,10 @@ class WordCloudCreator:
 
     @staticmethod
     def create_wordcloud(text: str, mask: np.ndarray = None) -> str:
-        wordcloud = WordCloud(background_color="white", max_words=100, mask=mask, max_font_size=40, width=1920, height=1080, stopwords=STOPWORDS).generate(text)
+        wordcloud = WordCloud(background_color="white", max_words=5000, mask=mask,
+                              max_font_size=72,
+                              width=1000, height=623,
+                              stopwords=STOPWORDS).generate(text)
 
         green = '#00ff00'
         red = '#ff0000'
@@ -30,9 +33,10 @@ class WordCloudCreator:
 
         image_colors = GroupedColorFunc(color_to_words, default_color='grey')
 
-        plt.figure(figsize=[20, 20])
+        plt.figure(figsize=(10, 6))
         plt.imshow(wordcloud.recolor(color_func=image_colors), interpolation="bilinear")
         plt.axis("off")
+        plt.tight_layout(pad=2)
 
         buf = BytesIO()
         plt.savefig(buf, format='jpg')

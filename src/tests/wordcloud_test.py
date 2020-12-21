@@ -25,7 +25,7 @@ class WordCloudBaseTest(unittest.TestCase):
             text_bytes = BytesIO(file.read())
             text_b64 = base64.b64encode(text_bytes.read()).decode('utf-8')
 
-        response = evaluate({"text": text_b64, "mask": mask_b64}, {})
+        response = evaluate({"text": text_b64, "mask": mask_b64, "url": ""}, {})
 
         # show word cloud image
         image_input = base64.b64decode(response["image"].encode('utf-8'))
