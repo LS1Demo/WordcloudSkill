@@ -1,7 +1,7 @@
 import base64
 import logging
 
-from src.wordcloud.wordcloud import WordCloud
+from src.wordcloud.wordcloud import WordCloudCreator
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("skill")
@@ -15,7 +15,7 @@ def evaluate(payload: dict, context: dict) -> dict:
 
     text = base64.b64decode(payload["text"].encode('utf-8'))
 
-    image = WordCloud.create_wordcloud(text)
+    image = WordCloudCreator.create_wordcloud(text)
 
     log.info("Wordcloud finished!")
 
