@@ -21,7 +21,7 @@ class WordCloudBaseTest(unittest.TestCase):
         buf.seek(0)
         mask_b64 = base64.b64encode(buf.read()).decode('utf-8')
 
-        with open('wordcloud_text_input', 'rb') as file:
+        with open('wordcloud_text_input.txt', 'rb') as file:
             text_bytes = BytesIO(file.read())
             text_b64 = base64.b64encode(text_bytes.read()).decode('utf-8')
 
@@ -35,6 +35,8 @@ class WordCloudBaseTest(unittest.TestCase):
         im = Image.open(input_buf)
         im.show()
         input_buf.close()
+        im1 = im.save("wordcloud.jpg")
+
 
     @staticmethod
     @unittest.skip

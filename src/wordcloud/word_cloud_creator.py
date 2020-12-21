@@ -14,9 +14,9 @@ class WordCloudCreator:
 
     @staticmethod
     def create_wordcloud(text: str, mask: np.ndarray = None) -> str:
-        wordcloud = WordCloud(background_color="white", max_words=100, mask=mask, max_font_size=40).generate(text)
+        wordcloud = WordCloud(background_color="white", max_words=100, mask=mask, max_font_size=40, width=1920, height=1080).generate(text)
 
-        plt.figure()
+        plt.figure(figsize=[20, 20])
         plt.imshow(wordcloud, interpolation="bilinear")
         plt.axis("off")
 
