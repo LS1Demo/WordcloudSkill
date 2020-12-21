@@ -15,7 +15,6 @@ class WordCloudBaseTest(unittest.TestCase):
 
     @staticmethod
     def test_wordcloud():
-        pass
         mask = Image.open("wordcloud_logo.png")
         buf = BytesIO()
         mask.save(buf, format="png")
@@ -27,7 +26,11 @@ class WordCloudBaseTest(unittest.TestCase):
             text_b64 = base64.b64encode(text_bytes.read()).decode('utf-8')
 
         url = "https://de.wikipedia.org/wiki/Frankreich"
-        response = evaluate({"text": text_b64, "mask": mask_b64, "url": url}, {})
+        response = evaluate({"text": text_b64,
+                             "mask": mask_b64,
+                             "url": url,
+                             "config": '{"max_words": 100, "max_font_size": 123, "height": 500, "width": 500}'},
+                            {})
 
         # show word cloud image
         image_input = base64.b64decode(response["image"].encode('utf-8'))
@@ -43,7 +46,6 @@ class WordCloudBaseTest(unittest.TestCase):
     @unittest.skip(reason="currently not needed")
     def test_wordcloud_mask_standalone():
         text = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et " \
-               "" \
                "justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, " \
                "sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd " \
                "gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."

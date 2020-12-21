@@ -3,6 +3,7 @@ namespace incoming {
         text: string
         mask: string
         url: string
+        config: string
     }
 }
 

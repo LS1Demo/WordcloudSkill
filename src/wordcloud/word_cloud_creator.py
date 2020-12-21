@@ -1,6 +1,6 @@
 import base64
 from io import BytesIO
-import random
+import json
 
 import numpy as np
 from textblob import TextBlob
@@ -14,10 +14,22 @@ from src.wordcloud.grouped_color_func import GroupedColorFunc
 class WordCloudCreator:
 
     @staticmethod
-    def create_wordcloud(text: str, mask: np.ndarray = None) -> str:
-        wordcloud = WordCloud(background_color="white", max_words=5000, mask=mask,
-                              max_font_size=72,
-                              width=1000, height=623,
+    def _read_config(config):
+        config_decoded = json.loads(config)
+        max_words = config_decoded["max_words"] if config_decoded["max_words"] else 5000
+        max_font_size = config_decoded["max_font_size"] if config_decoded["max_font_size"] else 72
+        width = config_decoded["width"] if config_decoded["width"] else 1000
+        height = config_decoded["height"] if config_decoded["height"] else 623
+        return int(max_words), int(max_font_size), int(width), int(height)
+
+    @staticmethod
+    def create_wordcloud(text: str, mask: np.ndarray = None, config: str = "") -> str:
+
+        max_words, max_font_size, width, height = WordCloudCreator._read_config(config)
+
+        wordcloud = WordCloud(background_color="white", max_words=max_words, mask=mask,
+                              max_font_size=max_font_size,
+                              width=width, height=height,
                               stopwords=STOPWORDS).generate(text)
 
         color_to_words = WordCloudCreator.calculate_color_shades()
@@ -35,7 +47,7 @@ class WordCloudCreator:
                 color_to_words[red_color].add(token)
 
         image_colors = GroupedColorFunc(color_to_words, default_color='grey')
-        wordcloud_image = WordCloudCreator.create_wordcloud_imagee(image_colors, wordcloud)
+        wordcloud_image = WordCloudCreator.create_wordcloud_imagee(image_colors, wordcloud, width, height)
 
         return wordcloud_image
 
@@ -47,14 +59,13 @@ class WordCloudCreator:
     def create_red_color_shade(hex_value):
         return "#" + hex_value + "0000"
 
-        plt.figure(figsize=(10, 6))
     @staticmethod
     def create_green_color_shade(hex_value):
         return "#00" + hex_value + "00"
 
     @staticmethod
-    def create_wordcloud_imagee(image_colors, wordcloud):
-        plt.figure(figsize=[20, 20])
+    def create_wordcloud_imagee(image_colors, wordcloud, width, height):
+        plt.figure(figsize=(width//100, height//100))
         plt.imshow(wordcloud.recolor(color_func=image_colors), interpolation="bilinear")
         plt.axis("off")
         plt.tight_layout(pad=2)

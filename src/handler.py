@@ -27,7 +27,7 @@ def evaluate(payload: dict, context: dict) -> dict:
     else:
         mask = np.array(Image.open(BytesIO(base64.b64decode(payload["mask"].encode('utf-8')))))
 
-    image = WordCloudCreator.create_wordcloud(text, mask)
+    image = WordCloudCreator.create_wordcloud(text=text, mask=mask, config=payload["config"])
 
     log.info("Wordcloud finished!")
 
