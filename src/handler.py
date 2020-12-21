@@ -18,11 +18,12 @@ def evaluate(payload: dict, context: dict) -> dict:
 
     log.info("Wordcloud started!")
 
+    text = ""
     if payload["text"]:
         text = base64.b64decode(payload["text"].encode('utf-8')).decode('utf-8')
     if payload["url"]:
         text = Scraper.get_plain_text_from_url(payload["url"])
-    assert text
+    assert text, "text could not be set"
 
     if payload["mask"] == "":
         mask = None
