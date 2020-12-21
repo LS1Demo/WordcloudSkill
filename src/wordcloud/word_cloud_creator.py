@@ -15,8 +15,6 @@ class WordCloudCreator:
 
     @staticmethod
     def create_wordcloud(text: str, mask: np.ndarray = None) -> str:
-        text = "This word is repeated very very very very often but this other other other one as well house house house bad bad bad bad awsome awsome awsome awsome awsome " \
-               "charming charming charming!"
         wordcloud = WordCloud(background_color="white", max_words=100, mask=mask, max_font_size=40, width=1920, height=1080, stopwords=STOPWORDS).generate(text)
 
         green = '#00ff00'
@@ -31,7 +29,6 @@ class WordCloudCreator:
                 color_to_words[red].add(token)
 
         image_colors = GroupedColorFunc(color_to_words, default_color='grey')
-        # image_colors = ImageColorGenerator(mask)  # use coloring of image mask
 
         plt.figure(figsize=[20, 20])
         plt.imshow(wordcloud.recolor(color_func=image_colors), interpolation="bilinear")
