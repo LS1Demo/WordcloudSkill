@@ -1,6 +1,8 @@
 import base64
 import logging
 from io import BytesIO
+
+import nltk
 import numpy as np
 
 from PIL import Image
@@ -35,6 +37,7 @@ def evaluate(payload: dict, context: dict) -> dict:
 
 
 def on_started(context: dict):
+    nltk.download('stopwords')
     print("Wordcloud skill started!")
 
 
